@@ -1,7 +1,6 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   useWidgetProps,
   useMaxHeight,
@@ -10,24 +9,123 @@ import {
   useIsChatGptApp,
 } from "./hooks";
 
+type JsonRpcSuccess<T> = {
+  jsonrpc: "2.0";
+  id: string | number;
+  result: T;
+};
+
+type JsonRpcFailure = {
+  jsonrpc: "2.0";
+  id: string | number | null;
+  error: { code: number; message: string };
+};
+
+type McpTool = {
+  name: string;
+  title?: string;
+  description?: string;
+  inputSchema?: {
+    type?: string;
+    properties?: Record<string, { type?: string; description?: string }>;
+    required?: string[];
+  };
+};
+
+type McpResource = {
+  uri: string;
+  name?: string;
+  title?: string;
+  description?: string;
+  mimeType?: string;
+};
+
+type McpToolsListResult = { tools?: McpTool[] };
+type McpResourcesListResult = { resources?: McpResource[] };
+
+async function mcpCall<T>(method: string): Promise<T> {
+  const response = await fetch("/mcp", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      jsonrpc: "2.0",
+      id: method,
+      method,
+      params: {},
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`MCP request failed with HTTP ${response.status}`);
+  }
+
+  const data = (await response.json()) as JsonRpcSuccess<T> | JsonRpcFailure;
+  if ("error" in data) {
+    throw new Error(data.error.message);
+  }
+
+  return data.result;
+}
+
+function renderFieldType(value?: string) {
+  return value ?? "unknown";
+}
+
 export default function Home() {
   const toolOutput = useWidgetProps<{
     name?: string;
-    result?: { structuredContent?: { name?: string } };
+    result?: { structuredContent?: { name?: string; timestamp?: string } };
   }>();
   const maxHeight = useMaxHeight() ?? undefined;
   const displayMode = useDisplayMode();
   const requestDisplayMode = useRequestDisplayMode();
   const isChatGptApp = useIsChatGptApp();
+  const [tools, setTools] = useState<McpTool[]>([]);
+  const [resources, setResources] = useState<McpResource[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [lastRefreshedAt, setLastRefreshedAt] = useState<string | null>(null);
 
   const name = toolOutput?.result?.structuredContent?.name || toolOutput?.name;
+  const timestamp = toolOutput?.result?.structuredContent?.timestamp;
+  const mcpEndpoint = useMemo(() => "/mcp", []);
+
+  const loadMcpSummary = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const [toolsResult, resourcesResult] = await Promise.all([
+        mcpCall<McpToolsListResult>("tools/list"),
+        mcpCall<McpResourcesListResult>("resources/list").catch(() => ({
+          resources: [],
+        })),
+      ]);
+
+      setTools(toolsResult.tools ?? []);
+      setResources(resourcesResult.resources ?? []);
+      setLastRefreshedAt(new Date().toISOString());
+    } catch (loadError) {
+      const message =
+        loadError instanceof Error
+          ? loadError.message
+          : "Failed to fetch MCP summary";
+      setError(message);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadMcpSummary();
+  }, [loadMcpSummary]);
 
   return (
     <div
-      className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center p-8 pb-20 gap-16 sm:p-20"
+      className="font-sans p-6 sm:p-10"
       style={{
         maxHeight,
-        height: displayMode === "fullscreen" ? maxHeight : undefined,
+        minHeight: displayMode === "fullscreen" ? maxHeight : undefined,
       }}
     >
       {displayMode !== "fullscreen" && (
@@ -52,7 +150,7 @@ export default function Home() {
           </svg>
         </button>
       )}
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
+      <main className="mx-auto w-full max-w-5xl space-y-6">
         {!isChatGptApp && (
           <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg px-4 py-3 w-full">
             <div className="flex items-center gap-3">
@@ -88,41 +186,185 @@ export default function Home() {
             </div>
           </div>
         )}
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Welcome to the ChatGPT Apps SDK Next.js Starter
-          </li>
-          <li className="mb-2 tracking-[-.01em]">
-            Name returned from tool call: {name ?? "..."}
-          </li>
-          <li className="mb-2 tracking-[-.01em]">MCP server path: /mcp</li>
-        </ol>
+        <section className="rounded-xl border border-slate-200 dark:border-slate-800 p-5 bg-white/70 dark:bg-slate-900/70">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-semibold tracking-tight">
+                MCP Homepage
+              </h1>
+              <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                Live summary of registered MCP tools, LLM-facing descriptions,
+                and top-level endpoint details.
+              </p>
+            </div>
+            <button
+              className="rounded-md border border-slate-300 dark:border-slate-700 px-3 py-1.5 text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              onClick={() => void loadMcpSummary()}
+              type="button"
+            >
+              Refresh
+            </button>
+          </div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <Link
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            prefetch={false}
-            href="/custom-page"
-          >
-            Visit another page
-          </Link>
-          <a
-            href="https://vercel.com/templates/ai/chatgpt-app-with-next-js"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline"
-          >
-            Deploy on Vercel
-          </a>
-        </div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+            <div className="rounded-lg border border-slate-200 dark:border-slate-800 p-3">
+              <p className="text-xs uppercase tracking-wide text-slate-500">
+                MCP endpoint
+              </p>
+              <p className="mt-1 font-mono text-sm">{mcpEndpoint}</p>
+            </div>
+            <div className="rounded-lg border border-slate-200 dark:border-slate-800 p-3">
+              <p className="text-xs uppercase tracking-wide text-slate-500">
+                Registered tools
+              </p>
+              <p className="mt-1 text-xl font-semibold">{tools.length}</p>
+            </div>
+            <div className="rounded-lg border border-slate-200 dark:border-slate-800 p-3">
+              <p className="text-xs uppercase tracking-wide text-slate-500">
+                Registered resources
+              </p>
+              <p className="mt-1 text-xl font-semibold">{resources.length}</p>
+            </div>
+          </div>
+
+          {lastRefreshedAt && (
+            <p className="mt-3 text-xs text-slate-500">
+              Last refreshed: {new Date(lastRefreshedAt).toLocaleString()}
+            </p>
+          )}
+
+          {error && (
+            <p className="mt-3 text-sm text-red-600 dark:text-red-400">
+              Could not load MCP definitions: {error}
+            </p>
+          )}
+        </section>
+
+        <section className="rounded-xl border border-slate-200 dark:border-slate-800 p-5 bg-white/70 dark:bg-slate-900/70">
+          <h2 className="text-lg font-semibold">MCP Tools</h2>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+            This list is fetched from the MCP server using{" "}
+            <span className="font-mono">tools/list</span>, so new tools appear
+            here automatically.
+          </p>
+
+          {isLoading ? (
+            <p className="mt-4 text-sm text-slate-500">Loading tools...</p>
+          ) : tools.length === 0 ? (
+            <p className="mt-4 text-sm text-slate-500">
+              No tools discovered from the MCP server.
+            </p>
+          ) : (
+            <div className="mt-4 space-y-4">
+              {tools.map((tool) => {
+                const properties = tool.inputSchema?.properties ?? {};
+                const requiredFields = new Set(tool.inputSchema?.required ?? []);
+                const fieldEntries = Object.entries(properties);
+
+                return (
+                  <article
+                    key={tool.name}
+                    className="rounded-lg border border-slate-200 dark:border-slate-800 p-4"
+                  >
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="font-semibold">{tool.title ?? tool.name}</h3>
+                      <span className="rounded bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-xs font-mono">
+                        {tool.name}
+                      </span>
+                    </div>
+
+                    <p className="mt-2 text-sm text-slate-700 dark:text-slate-200">
+                      {tool.description ?? "No description provided to the LLM."}
+                    </p>
+
+                    <div className="mt-3">
+                      <p className="text-xs uppercase tracking-wide text-slate-500">
+                        Input schema
+                      </p>
+                      {fieldEntries.length === 0 ? (
+                        <p className="mt-1 text-sm text-slate-500">
+                          No input fields.
+                        </p>
+                      ) : (
+                        <ul className="mt-2 space-y-2">
+                          {fieldEntries.map(([fieldName, field]) => (
+                            <li key={fieldName} className="text-sm">
+                              <span className="font-mono">{fieldName}</span>
+                              <span className="ml-2 text-slate-500">
+                                ({renderFieldType(field.type)})
+                                {requiredFields.has(fieldName) ? " required" : ""}
+                              </span>
+                              <p className="text-slate-600 dark:text-slate-300">
+                                {field.description ??
+                                  "No field description provided to the LLM."}
+                              </p>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          )}
+        </section>
+
+        <section className="rounded-xl border border-slate-200 dark:border-slate-800 p-5 bg-white/70 dark:bg-slate-900/70">
+          <h2 className="text-lg font-semibold">MCP Resources</h2>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+            Resources returned by <span className="font-mono">resources/list</span>.
+          </p>
+
+          {isLoading ? (
+            <p className="mt-4 text-sm text-slate-500">Loading resources...</p>
+          ) : resources.length === 0 ? (
+            <p className="mt-4 text-sm text-slate-500">
+              No resources discovered from the MCP server.
+            </p>
+          ) : (
+            <ul className="mt-4 space-y-3">
+              {resources.map((resource) => (
+                <li
+                  key={resource.uri}
+                  className="rounded-lg border border-slate-200 dark:border-slate-800 p-4 text-sm"
+                >
+                  <p className="font-semibold">
+                    {resource.title ?? resource.name ?? resource.uri}
+                  </p>
+                  <p className="mt-1 font-mono text-xs break-all text-slate-500">
+                    {resource.uri}
+                  </p>
+                  <p className="mt-2 text-slate-700 dark:text-slate-200">
+                    {resource.description ??
+                      "No resource description provided to the LLM."}
+                  </p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    MIME type: {resource.mimeType ?? "unknown"}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        <section className="rounded-xl border border-slate-200 dark:border-slate-800 p-5 bg-white/70 dark:bg-slate-900/70">
+          <h2 className="text-lg font-semibold">Latest tool payload</h2>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+            Values currently available in widget props from the most recent tool
+            invocation.
+          </p>
+          <ul className="mt-3 text-sm space-y-1">
+            <li>
+              Name:{" "}
+              <span className="font-mono">{name ?? "Not provided yet"}</span>
+            </li>
+            <li>
+              Timestamp:{" "}
+              <span className="font-mono">{timestamp ?? "Not provided yet"}</span>
+            </li>
+          </ul>
+        </section>
       </main>
     </div>
   );

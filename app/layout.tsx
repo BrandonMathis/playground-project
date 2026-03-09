@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "GPT Domain App",
-  description: "MCP-powered GPT App built with Next.js",
+  title: "MCP Homepage",
+  description: "Auto-updating homepage for MCP tools and resources",
 };
 
 export default function RootLayout({
