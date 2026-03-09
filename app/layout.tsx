@@ -1,21 +1,21 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import { baseURL } from "@/baseUrl";
+import type { Metadata } from 'next';
+import { Geist, Geist_Mono } from 'next/font/google';
+import './globals.css';
+import { baseURL } from '@/baseUrl';
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+  variable: '--font-geist-sans',
+  subsets: ['latin'],
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
 });
 
 export const metadata: Metadata = {
-  title: "GPT Domain App",
-  description: "MCP-powered GPT App built with Next.js",
+  title: 'GPT Domain App',
+  description: 'MCP-powered GPT App built with Next.js',
 };
 
 export default function RootLayout({
@@ -28,11 +28,7 @@ export default function RootLayout({
       <head>
         <NextChatSDKBootstrap baseUrl={baseURL} />
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
-      </body>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>{children}</body>
     </html>
   );
 }
@@ -44,18 +40,15 @@ function NextChatSDKBootstrap({ baseUrl }: { baseUrl: string }) {
       <script>{`window.innerBaseUrl = ${JSON.stringify(baseUrl)}`}</script>
       <script>{`window.__isChatGptApp = typeof window.openai !== "undefined";`}</script>
       <script>
-        {"(" +
+        {'(' +
           (() => {
             const baseUrl = window.innerBaseUrl;
             const htmlElement = document.documentElement;
             const observer = new MutationObserver((mutations) => {
               mutations.forEach((mutation) => {
-                if (
-                  mutation.type === "attributes" &&
-                  mutation.target === htmlElement
-                ) {
+                if (mutation.type === 'attributes' && mutation.target === htmlElement) {
                   const attrName = mutation.attributeName;
-                  if (attrName && attrName !== "suppresshydrationwarning") {
+                  if (attrName && attrName !== 'suppresshydrationwarning') {
                     htmlElement.removeAttribute(attrName);
                   }
                 }
@@ -68,14 +61,14 @@ function NextChatSDKBootstrap({ baseUrl }: { baseUrl: string }) {
 
             const originalReplaceState = history.replaceState;
             history.replaceState = (s, unused, url) => {
-              const u = new URL(url ?? "", window.location.href);
+              const u = new URL(url ?? '', window.location.href);
               const href = u.pathname + u.search + u.hash;
               originalReplaceState.call(history, unused, href);
             };
 
             const originalPushState = history.pushState;
             history.pushState = (s, unused, url) => {
-              const u = new URL(url ?? "", window.location.href);
+              const u = new URL(url ?? '', window.location.href);
               const href = u.pathname + u.search + u.hash;
               originalPushState.call(history, unused, href);
             };
@@ -84,28 +77,23 @@ function NextChatSDKBootstrap({ baseUrl }: { baseUrl: string }) {
             const isInIframe = window.self !== window.top;
 
             window.addEventListener(
-              "click",
+              'click',
               (e) => {
-                const a = (e?.target as HTMLElement)?.closest("a");
+                const a = (e?.target as HTMLElement)?.closest('a');
                 if (!a || !a.href) return;
                 const url = new URL(a.href, window.location.href);
-                if (
-                  url.origin !== window.location.origin &&
-                  url.origin != appOrigin
-                ) {
+                if (url.origin !== window.location.origin && url.origin != appOrigin) {
                   try {
                     if (window.openai) {
                       window.openai?.openExternal({ href: a.href });
                       e.preventDefault();
                     }
                   } catch {
-                    console.warn(
-                      "openExternal failed, likely not in OpenAI client"
-                    );
+                    console.warn('openExternal failed, likely not in OpenAI client');
                   }
                 }
               },
-              true
+              true,
             );
 
             if (isInIframe && window.location.origin !== appOrigin) {
@@ -113,14 +101,14 @@ function NextChatSDKBootstrap({ baseUrl }: { baseUrl: string }) {
 
               window.fetch = (input: URL | RequestInfo, init?: RequestInit) => {
                 let url: URL;
-                if (typeof input === "string" || input instanceof URL) {
+                if (typeof input === 'string' || input instanceof URL) {
                   url = new URL(input, window.location.href);
                 } else {
                   url = new URL(input.url, window.location.href);
                 }
 
                 if (url.origin === appOrigin) {
-                  if (typeof input === "string" || input instanceof URL) {
+                  if (typeof input === 'string' || input instanceof URL) {
                     input = url.toString();
                   } else {
                     input = new Request(url.toString(), input);
@@ -128,7 +116,7 @@ function NextChatSDKBootstrap({ baseUrl }: { baseUrl: string }) {
 
                   return originalFetch.call(window, input, {
                     ...init,
-                    mode: "cors",
+                    mode: 'cors',
                   });
                 }
 
@@ -139,7 +127,7 @@ function NextChatSDKBootstrap({ baseUrl }: { baseUrl: string }) {
                   newUrl.hash = url.hash;
                   url = newUrl;
 
-                  if (typeof input === "string" || input instanceof URL) {
+                  if (typeof input === 'string' || input instanceof URL) {
                     input = url.toString();
                   } else {
                     input = new Request(url.toString(), input);
@@ -147,7 +135,7 @@ function NextChatSDKBootstrap({ baseUrl }: { baseUrl: string }) {
 
                   return originalFetch.call(window, input, {
                     ...init,
-                    mode: "cors",
+                    mode: 'cors',
                   });
                 }
 
@@ -155,7 +143,7 @@ function NextChatSDKBootstrap({ baseUrl }: { baseUrl: string }) {
               };
             }
           }).toString() +
-          ")()"}
+          ')()'}
       </script>
     </>
   );
