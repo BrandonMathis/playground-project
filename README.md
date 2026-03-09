@@ -72,6 +72,14 @@ pnpm build
 pnpm start
 ```
 
+## Available scripts
+
+| Command | What it does |
+| --- | --- |
+| `pnpm dev` | Starts the Next.js dev server with Turbopack on port 3000 |
+| `pnpm build` | Creates a production build (also validates TypeScript during build) |
+| `pnpm start` | Runs the production server from the build output |
+
 ## Using the app in ChatGPT
 
 1. Deploy the app (typically on Vercel).
@@ -91,11 +99,30 @@ When running outside ChatGPT, `app/page.tsx` intentionally shows a banner if `wi
 
 ## Extending with a new MCP tool
 
-1. Add a new widget config in `app/mcp/route.ts`.
-2. Register a resource for the widget HTML (`registerResource`).
-3. Register a tool with a Zod schema (`registerTool`).
-4. Return `content`, `structuredContent`, and `_meta` in the handler.
-5. If needed, add/update widget UI under `app/` and reference it from the resource.
+1. Add a tool definition to `MCP_TOOLS` in `mcpTools.ts` (id, descriptions, schema fields, resource path, template URI).
+2. Ensure the widget route exists under `app/` (for example `app/page.tsx` or another page referenced by `resourcePath`).
+3. `app/mcp/route.ts` automatically iterates `MCP_TOOLS`, fetches the widget HTML, and registers both the resource and tool.
+4. Confirm input field types map to supported Zod types (`string`, `number`, `boolean`) in `zodTypeByInputType`.
+5. Run `pnpm build` to verify the new tool compiles cleanly before opening a PR.
+
+## Contributor workflow
+
+1. Create or pick a Linear issue in the **This Dot** team/project.
+2. Implement the change in a focused branch.
+3. Run local verification:
+
+   ```bash
+   pnpm build
+   ```
+
+4. Update docs when behavior, architecture, or developer setup changes.
+5. Open a PR and link it back to the Linear issue.
+
+## Troubleshooting
+
+- **`window.openai` is missing locally:** this is expected outside ChatGPT. The app shows an informational banner in local browser sessions.
+- **Widget not rendering in ChatGPT:** check that `/mcp` is reachable and resource metadata includes `openai/outputTemplate`.
+- **Unexpected cross-origin behavior in iframe:** verify `NextChatSDKBootstrap` in `app/layout.tsx` remains intact and `baseUrl.ts` resolves the correct deployment URL.
 
 ## Useful links
 
