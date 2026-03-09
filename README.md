@@ -72,6 +72,16 @@ pnpm build
 pnpm start
 ```
 
+### Code formatting
+
+```bash
+pnpm format
+pnpm format:check
+```
+
+Prettier is configured via `.prettierrc`, with generated/build output paths excluded in
+`.prettierignore`.
+
 ## Using the app in ChatGPT
 
 1. Deploy the app (typically on Vercel).
