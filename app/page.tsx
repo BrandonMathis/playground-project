@@ -1,7 +1,5 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
 import {
   useWidgetProps,
   useMaxHeight,
@@ -9,11 +7,35 @@ import {
   useRequestDisplayMode,
   useIsChatGptApp,
 } from "./hooks";
+import { getToolSummaries, mcpServerOverview } from "./mcp/catalog";
+
+type ToolSummary = {
+  id: string;
+  title: string;
+  description: string;
+  widgetDescription: string;
+  templateUri: string;
+  invoking: string;
+  invoked: string;
+  inputDescription: string;
+  pagePath: string;
+};
 
 export default function Home() {
   const toolOutput = useWidgetProps<{
     name?: string;
-    result?: { structuredContent?: { name?: string } };
+    result?: {
+      structuredContent?: {
+        name?: string;
+        timestamp?: string;
+        server?: {
+          endpoint: string;
+          transport: string;
+          autoUpdateSource: string;
+        };
+        tools?: ToolSummary[];
+      };
+    };
   }>();
   const maxHeight = useMaxHeight() ?? undefined;
   const displayMode = useDisplayMode();
@@ -21,10 +43,13 @@ export default function Home() {
   const isChatGptApp = useIsChatGptApp();
 
   const name = toolOutput?.result?.structuredContent?.name || toolOutput?.name;
+  const timestamp = toolOutput?.result?.structuredContent?.timestamp;
+  const server = toolOutput?.result?.structuredContent?.server ?? mcpServerOverview;
+  const tools = toolOutput?.result?.structuredContent?.tools ?? getToolSummaries();
 
   return (
     <div
-      className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center p-8 pb-20 gap-16 sm:p-20"
+      className="font-sans p-6 sm:p-10"
       style={{
         maxHeight,
         height: displayMode === "fullscreen" ? maxHeight : undefined,
@@ -52,7 +77,8 @@ export default function Home() {
           </svg>
         </button>
       )}
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
+
+      <main className="mx-auto w-full max-w-5xl space-y-6">
         {!isChatGptApp && (
           <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg px-4 py-3 w-full">
             <div className="flex items-center gap-3">
@@ -88,41 +114,92 @@ export default function Home() {
             </div>
           </div>
         )}
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Welcome to the ChatGPT Apps SDK Next.js Starter
-          </li>
-          <li className="mb-2 tracking-[-.01em]">
-            Name returned from tool call: {name ?? "..."}
-          </li>
-          <li className="mb-2 tracking-[-.01em]">MCP server path: /mcp</li>
-        </ol>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <Link
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            prefetch={false}
-            href="/custom-page"
-          >
-            Visit another page
-          </Link>
-          <a
-            href="https://vercel.com/templates/ai/chatgpt-app-with-next-js"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline"
-          >
-            Deploy on Vercel
-          </a>
-        </div>
+        <header className="space-y-2">
+          <h1 className="text-3xl font-semibold tracking-tight">MCP Homepage</h1>
+          <p className="text-sm text-slate-600 dark:text-slate-300">
+            Summary of registered MCP tools and key server details.
+          </p>
+          <p className="text-sm">
+            Name returned from tool call:{" "}
+            <span className="font-mono">{name ?? "not provided yet"}</span>
+          </p>
+          {timestamp && (
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Last tool invocation timestamp: {timestamp}
+            </p>
+          )}
+        </header>
+
+        <section className="rounded-lg border border-slate-200 dark:border-slate-700 p-4">
+          <h2 className="text-lg font-medium mb-3">Top-level information</h2>
+          <ul className="space-y-2 text-sm">
+            <li>
+              <span className="font-semibold">MCP endpoint:</span>{" "}
+              <span className="font-mono">{server.endpoint}</span>
+            </li>
+            <li>
+              <span className="font-semibold">Transport:</span> {server.transport}
+            </li>
+            <li>
+              <span className="font-semibold">Auto-update source:</span>{" "}
+              <span className="font-mono">{server.autoUpdateSource}</span>
+            </li>
+            <li>
+              <span className="font-semibold">Registered tools:</span> {tools.length}
+            </li>
+          </ul>
+        </section>
+
+        <section className="space-y-3">
+          <h2 className="text-lg font-medium">Registered MCP tools</h2>
+          <div className="grid gap-3">
+            {tools.map((tool) => (
+              <article
+                key={tool.id}
+                className="rounded-lg border border-slate-200 dark:border-slate-700 p-4"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h3 className="text-base font-semibold">
+                      {tool.title}{" "}
+                      <span className="text-xs font-mono text-slate-500">({tool.id})</span>
+                    </h3>
+                    <p className="text-sm mt-1">{tool.description}</p>
+                  </div>
+                </div>
+                <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
+                  <div>
+                    <dt className="font-medium">Widget description (LLM-facing)</dt>
+                    <dd>{tool.widgetDescription}</dd>
+                  </div>
+                  <div>
+                    <dt className="font-medium">Template URI</dt>
+                    <dd className="font-mono break-all">{tool.templateUri}</dd>
+                  </div>
+                  <div>
+                    <dt className="font-medium">Invoking / Invoked text</dt>
+                    <dd>
+                      {tool.invoking} / {tool.invoked}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="font-medium">Input field description</dt>
+                    <dd>{tool.inputDescription}</dd>
+                  </div>
+                  <div>
+                    <dt className="font-medium">Backed by page path</dt>
+                    <dd className="font-mono">{tool.pagePath}</dd>
+                  </div>
+                </dl>
+              </article>
+            ))}
+          </div>
+        </section>
+        <p className="text-xs text-slate-500 dark:text-slate-400">
+          Add or modify tools in <code>app/mcp/catalog.ts</code> to update this
+          homepage and MCP registration together.
+        </p>
       </main>
     </div>
   );
