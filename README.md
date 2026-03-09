@@ -1,14 +1,15 @@
 # GPT Domain App
 
-Next.js 16 ChatGPT App that exposes an MCP server at `/mcp` and renders a widget UI inside ChatGPT using the OpenAI Apps SDK bridge APIs.
+Production-ready Next.js 16 ChatGPT App that exposes an MCP server at `/mcp` and renders an interactive widget inside ChatGPT using the OpenAI Apps SDK bridge APIs.
 
 ## What this project does
 
-- Hosts an MCP endpoint (`app/mcp/route.ts`) with one example tool: `show_content`
+- Hosts an MCP endpoint (`app/mcp/route.ts`) with dynamically registered tools from `mcpTools.ts` (currently `show_content`)
 - Registers a widget resource (`text/html+skybridge`) used by ChatGPT to render app UI
 - Renders a client-side widget (`app/page.tsx`) that reads tool output via Apps SDK hooks
 - Includes iframe-safe bootstrap logic in the root layout so navigation and fetch work in ChatGPT
 - Adds permissive CORS middleware required for MCP communication from ChatGPT
+- Builds a homepage (`/`) that documents MCP tools and their input schema details
 
 ## Tech stack
 
@@ -31,6 +32,7 @@ app/
 └── globals.css               # Global styles
 baseUrl.ts                    # Runtime base URL resolution (local + Vercel)
 middleware.ts                 # Global CORS handling for MCP/browser requests
+mcpTools.ts                  # Shared MCP tool definitions used by route + UI
 ```
 
 ## How MCP wiring works
@@ -40,8 +42,20 @@ middleware.ts                 # Global CORS handling for MCP/browser requests
 3. A tool is registered with a Zod input schema and OpenAI widget metadata.
 4. Tool output returns `content`, `structuredContent`, and `_meta`.
 5. ChatGPT resolves `openai/outputTemplate` to render the widget from the resource.
+6. The widget reads the tool's `structuredContent` via `useWidgetProps()`.
 
 The helper `widgetMeta()` in `app/mcp/route.ts` centralizes the required OpenAI metadata keys so tool/resource behavior stays consistent.
+
+## Request flow at a glance
+
+```text
+ChatGPT -> POST /mcp (tool call)
+       -> app/mcp/route.ts tool handler
+       -> content + structuredContent + _meta returned
+       -> ChatGPT resolves openai/outputTemplate resource
+       -> app/page.tsx widget reads props from Apps SDK hooks
+       -> widget renders tool output
+```
 
 ## Local development
 
@@ -72,6 +86,37 @@ pnpm build
 pnpm start
 ```
 
+## Contributor workflow
+
+1. Create or pick a Linear issue.
+2. Implement changes in a dedicated branch.
+3. Run `pnpm build` to validate TypeScript and Next.js compilation.
+4. Open a pull request with a concise summary and testing notes.
+5. After merge, verify the deployed MCP endpoint still serves `/mcp` and widget resources.
+
+## Troubleshooting
+
+### Widget shows "no window.openai detected"
+
+Expected when loading the page directly in a browser. The widget bridge only exists when the app is rendered inside ChatGPT.
+
+### MCP resource fails to render in ChatGPT
+
+Check:
+
+- `/mcp` is reachable from the deployed URL.
+- `middleware.ts` is still applying CORS headers.
+- `openai/outputTemplate` matches the registered resource URI.
+- Resource content is returned with `mimeType: "text/html+skybridge"`.
+
+### Local HTML fetch in MCP route fails
+
+The MCP route fetches widget HTML from `baseURL + resourcePath`. Confirm:
+
+- the dev server is running (`pnpm dev`)
+- `baseUrl.ts` resolves to `http://localhost:3000` in development
+- the referenced `resourcePath` exists under `app/`
+
 ## Using the app in ChatGPT
 
 1. Deploy the app (typically on Vercel).
@@ -95,7 +140,8 @@ When running outside ChatGPT, `app/page.tsx` intentionally shows a banner if `wi
 2. Register a resource for the widget HTML (`registerResource`).
 3. Register a tool with a Zod schema (`registerTool`).
 4. Return `content`, `structuredContent`, and `_meta` in the handler.
-5. If needed, add/update widget UI under `app/` and reference it from the resource.
+5. Add/update the corresponding tool definition in `mcpTools.ts` so the homepage and MCP route stay in sync.
+6. If needed, add/update widget UI under `app/` and reference it from the resource.
 
 ## Useful links
 
