@@ -1,4 +1,5 @@
 import { baseURL } from "@/baseUrl";
+import { MCP_TOOLS, type McpToolDefinition, type ToolInputField } from "@/mcpTools";
 import { createMcpHandler } from "mcp-handler";
 import { z } from "zod";
 
@@ -18,6 +19,38 @@ type ContentWidget = {
   widgetDomain: string;
 };
 
+const zodTypeByInputType: Record<ToolInputField["type"], () => z.ZodTypeAny> = {
+  string: () => z.string(),
+  number: () => z.number(),
+  boolean: () => z.boolean(),
+};
+
+const createInputSchema = (tool: McpToolDefinition) =>
+  Object.fromEntries(
+    tool.inputSchemaFields.map((field) => {
+      const baseSchemaFactory = zodTypeByInputType[field.type];
+      const describedField = baseSchemaFactory().describe(field.description);
+      return [
+        field.name,
+        field.required === false ? describedField.optional() : describedField,
+      ];
+    })
+  );
+
+const createContentWidget = (
+  tool: McpToolDefinition,
+  html: string
+): ContentWidget => ({
+  id: tool.id,
+  title: tool.title,
+  templateUri: tool.templateUri,
+  invoking: tool.invoking,
+  invoked: tool.invoked,
+  html,
+  description: tool.widgetDescription,
+  widgetDomain: tool.widgetDomain,
+});
+
 function widgetMeta(widget: ContentWidget) {
   return {
     "openai/outputTemplate": widget.templateUri,
@@ -29,73 +62,67 @@ function widgetMeta(widget: ContentWidget) {
 }
 
 const handler = createMcpHandler(async (server) => {
-  const html = await getAppsSdkCompatibleHtml(baseURL, "/");
+  for (const tool of MCP_TOOLS) {
+    const html = await getAppsSdkCompatibleHtml(baseURL, tool.resourcePath);
+    const contentWidget = createContentWidget(tool, html);
 
-  const contentWidget: ContentWidget = {
-    id: "show_content",
-    title: "Show Content",
-    templateUri: "ui://widget/content-template.html",
-    invoking: "Loading content...",
-    invoked: "Content loaded",
-    html: html,
-    description: "Displays the homepage content",
-    widgetDomain: "https://nextjs.org/docs",
-  };
-  server.registerResource(
-    "content-widget",
-    contentWidget.templateUri,
-    {
-      title: contentWidget.title,
-      description: contentWidget.description,
-      mimeType: "text/html+skybridge",
-      _meta: {
-        "openai/widgetDescription": contentWidget.description,
-        "openai/widgetPrefersBorder": true,
-      },
-    },
-    async (uri) => ({
-      contents: [
-        {
-          uri: uri.href,
-          mimeType: "text/html+skybridge",
-          text: `<html>${contentWidget.html}</html>`,
-          _meta: {
-            "openai/widgetDescription": contentWidget.description,
-            "openai/widgetPrefersBorder": true,
-            "openai/widgetDomain": contentWidget.widgetDomain,
-          },
+    server.registerResource(
+      `${tool.id}-widget`,
+      contentWidget.templateUri,
+      {
+        title: contentWidget.title,
+        description: contentWidget.description,
+        mimeType: "text/html+skybridge",
+        _meta: {
+          "openai/widgetDescription": contentWidget.description,
+          "openai/widgetPrefersBorder": true,
         },
-      ],
-    })
-  );
-
-  server.registerTool(
-    contentWidget.id,
-    {
-      title: contentWidget.title,
-      description:
-        "Fetch and display the homepage content with the name of the user",
-      inputSchema: {
-        name: z.string().describe("The name of the user to display on the homepage"),
       },
-      _meta: widgetMeta(contentWidget),
-    },
-    async ({ name }) => {
-      return {
-        content: [
+      async (uri) => ({
+        contents: [
           {
-            type: "text",
-            text: name,
+            uri: uri.href,
+            mimeType: "text/html+skybridge",
+            text: `<html>${contentWidget.html}</html>`,
+            _meta: {
+              "openai/widgetDescription": contentWidget.description,
+              "openai/widgetPrefersBorder": true,
+              "openai/widgetDomain": contentWidget.widgetDomain,
+            },
           },
         ],
-        structuredContent: {
-          name: name,
-          timestamp: new Date().toISOString(),
-        },
+      })
+    );
+
+    server.registerTool(
+      contentWidget.id,
+      {
+        title: contentWidget.title,
+        description: tool.description,
+        inputSchema: createInputSchema(tool),
         _meta: widgetMeta(contentWidget),
-      };
-    }
-  );
+      },
+      async (input) => {
+        const stringInput = Object.values(input).find(
+          (value): value is string => typeof value === "string"
+        );
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: stringInput ?? `${contentWidget.title} executed`,
+            },
+          ],
+          structuredContent: {
+            ...input,
+            timestamp: new Date().toISOString(),
+          },
+          _meta: widgetMeta(contentWidget),
+        };
+      }
+    );
+  }
 });
 
 export const GET = handler;
