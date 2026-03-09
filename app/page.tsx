@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { mcpToolCatalog } from "@/mcpCatalog";
 import {
   useWidgetProps,
   useMaxHeight,
@@ -105,6 +106,54 @@ export default function Home() {
           </li>
           <li className="mb-2 tracking-[-.01em]">MCP server path: /mcp</li>
         </ol>
+
+        <section className="w-full max-w-3xl rounded-xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/70 p-5">
+          <h2 className="text-lg font-semibold mb-1">MCP Tool Summary</h2>
+          <p className="text-sm text-slate-600 dark:text-slate-300 mb-4">
+            This list is generated from the same MCP catalog used for tool
+            registration.
+          </p>
+          <ul className="space-y-4">
+            {mcpToolCatalog.map((tool) => (
+              <li
+                key={tool.id}
+                className="rounded-lg border border-slate-200 dark:border-slate-700 p-4"
+              >
+                <div className="flex flex-col gap-1">
+                  <p className="text-sm font-mono text-slate-500 dark:text-slate-400">
+                    {tool.id}
+                  </p>
+                  <h3 className="font-semibold">{tool.title}</h3>
+                  <p className="text-sm">{tool.description}</p>
+                  <p className="text-xs text-slate-600 dark:text-slate-300">
+                    Template: <span className="font-mono">{tool.templateUri}</span>
+                  </p>
+                  <p className="text-xs text-slate-600 dark:text-slate-300">
+                    Invocation text: "{tool.invoking}" → "{tool.invoked}"
+                  </p>
+                </div>
+                <div className="mt-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300">
+                    Input schema
+                  </p>
+                  <ul className="mt-1 space-y-1">
+                    {tool.inputFields.map((field) => (
+                      <li
+                        key={`${tool.id}-${field.name}`}
+                        className="text-xs text-slate-700 dark:text-slate-200"
+                      >
+                        <span className="font-mono">
+                          {field.name}: {field.type}
+                        </span>{" "}
+                        - {field.description}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
 
         <div className="flex gap-4 items-center flex-col sm:flex-row">
           <Link
