@@ -1,151 +1,104 @@
-# ChatGPT Apps SDK Next.js Starter
+# GPT Domain App
 
-A minimal Next.js application demonstrating how to build an [OpenAI Apps SDK](https://developers.openai.com/apps-sdk) compatible MCP server with widget rendering in ChatGPT.
+Next.js 16 ChatGPT App that exposes an MCP server at `/mcp` and renders a widget UI inside ChatGPT using the OpenAI Apps SDK bridge APIs.
 
-## Overview
+## What this project does
 
-This project shows how to integrate a Next.js application with the ChatGPT Apps SDK using the Model Context Protocol (MCP). It includes a working MCP server that exposes tools and resources that can be called from ChatGPT, with responses rendered natively in ChatGPT.
+- Hosts an MCP endpoint (`app/mcp/route.ts`) with one example tool: `show_content`
+- Registers a widget resource (`text/html+skybridge`) used by ChatGPT to render app UI
+- Renders a client-side widget (`app/page.tsx`) that reads tool output via Apps SDK hooks
+- Includes iframe-safe bootstrap logic in the root layout so navigation and fetch work in ChatGPT
+- Adds permissive CORS middleware required for MCP communication from ChatGPT
 
-## Key Components
+## Tech stack
 
-### 1. MCP Server Route (`app/mcp/route.ts`)
+- **Framework:** Next.js App Router (TypeScript strict mode)
+- **Runtime/UI:** React 19
+- **MCP:** `@modelcontextprotocol/sdk` + `mcp-handler`
+- **Validation:** Zod
+- **Styling:** Tailwind CSS v4
+- **Package manager:** pnpm (lockfile also includes npm compatibility)
 
-The core MCP server implementation that exposes tools and resources to ChatGPT.
+## Project structure
 
-**Key features:**
-- **Tool registration** with OpenAI-specific metadata
-- **Resource registration** that serves HTML content for iframe rendering
-- **Cross-linking** between tools and resources via `templateUri`
-
-**OpenAI-specific metadata:**
-```typescript
-{
-  "openai/outputTemplate": widget.templateUri,      // Links to resource
-  "openai/toolInvocation/invoking": "Loading...",   // Loading state text
-  "openai/toolInvocation/invoked": "Loaded",        // Completion state text
-  "openai/widgetAccessible": false,                 // Widget visibility
-  "openai/resultCanProduceWidget": true            // Enable widget rendering
-}
+```text
+app/
+├── mcp/route.ts              # MCP resources + tool registration
+├── hooks/                    # OpenAI Apps SDK helper hooks
+├── custom-page/page.tsx      # Secondary example route
+├── page.tsx                  # Main widget UI rendered in ChatGPT
+├── layout.tsx                # Root layout + NextChatSDKBootstrap
+└── globals.css               # Global styles
+baseUrl.ts                    # Runtime base URL resolution (local + Vercel)
+middleware.ts                 # Global CORS handling for MCP/browser requests
 ```
 
-Full configuration options: [OpenAI Apps SDK MCP Documentation](https://developers.openai.com/apps-sdk/build/mcp-server)
+## How MCP wiring works
 
-### 2. Asset Configuration (`next.config.ts`)
+1. `createMcpHandler` creates `GET` and `POST` handlers for `/mcp`.
+2. A resource is registered with MIME type `text/html+skybridge`.
+3. A tool is registered with a Zod input schema and OpenAI widget metadata.
+4. Tool output returns `content`, `structuredContent`, and `_meta`.
+5. ChatGPT resolves `openai/outputTemplate` to render the widget from the resource.
 
-**Critical:** Set `assetPrefix` to ensure `/_next/` static assets are fetched from the correct origin:
+The helper `widgetMeta()` in `app/mcp/route.ts` centralizes the required OpenAI metadata keys so tool/resource behavior stays consistent.
 
-```typescript
-const nextConfig: NextConfig = {
-  assetPrefix: baseURL,  // Prevents 404s on /_next/ files in iframe
-};
-```
+## Local development
 
-Without this, Next.js will attempt to load assets from the iframe's URL, causing 404 errors.
+### Prerequisites
 
-### 3. CORS Middleware (`middleware.ts`)
+- Node.js 20+
+- pnpm 10+
 
-Handles browser OPTIONS preflight requests required for cross-origin RSC (React Server Components) fetching during client-side navigation:
-
-```typescript
-export function middleware(request: NextRequest) {
-  if (request.method === "OPTIONS") {
-    // Return 204 with CORS headers
-  }
-  // Add CORS headers to all responses
-}
-```
-
-### 4. SDK Bootstrap (`app/layout.tsx`)
-
-The `<NextChatSDKBootstrap>` component patches browser APIs to work correctly within the ChatGPT iframe:
-
-**What it patches:**
-- `history.pushState` / `history.replaceState` - Prevents full-origin URLs in history
-- `window.fetch` - Rewrites same-origin requests to use the correct base URL
-- `<html>` attribute observer - Prevents ChatGPT from modifying the root element
-
-**Required configuration:**
-```tsx
-<html lang="en" suppressHydrationWarning>
-  <head>
-    <NextChatSDKBootstrap baseUrl={baseURL} />
-  </head>
-  <body>{children}</body>
-</html>
-```
-
-**Note:** `suppressHydrationWarning` is currently required because ChatGPT modifies the initial HTML before the Next.js app hydrates, causing hydration mismatches.
-
-## Getting Started
-
-### Installation
+### Install
 
 ```bash
-npm install
-# or
 pnpm install
 ```
 
-### Development
+### Run dev server
 
 ```bash
-npm run dev
-# or
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to see the app.
+App URL: `http://localhost:3000`  
+MCP URL: `http://localhost:3000/mcp`
 
-### Testing the MCP Server
+### Production build
 
-The MCP server is available at:
-```
-http://localhost:3000/mcp
-```
-
-### Connecting from ChatGPT
-
-1. [Deploy your app to Vercel](https://vercel.com/new/clone?demo-description=Ship%20an%20ChatGPT%20app%20on%20Vercel%20with%20Next.js%20and%20Model%20Context%20Protocol%20%28MCP%29.%0A&demo-image=%2F%2Fimages.ctfassets.net%2Fe5382hct74si%2F5TdbPy0tev8hh3rTOsdfMm%2F155b970ca5e75adb74206db26493efc7%2Fimage.png&demo-title=ChatGPT%20app%20with%20Next.js&demo-url=https%3A%2F%2Fchatgpt-apps-sdk-nextjs-starter.labs.vercel.dev%2F&from=templates&project-name=ChatGPT%20app%20with%20Next.js&project-names=Comma%20separated%20list%20of%20project%20names%2Cto%20match%20the%20root-directories&repository-name=chatgpt-app-with-next-js&repository-url=https%3A%2F%2Fgithub.com%2Fvercel-labs%2Fchatgpt-apps-sdk-nextjs-starter&root-directories=List%20of%20directory%20paths%20for%20the%20directories%20to%20clone%20into%20projects&skippable-integrations=1&teamSlug=vercel)
-3. In ChatGPT, navigate to **Settings → [Connectors](https://chatgpt.com/#settings/Connectors) → Create** and add your MCP server URL with the `/mcp` path (e.g., `https://your-app.vercel.app/mcp`)
-
-**Note:** Connecting MCP servers to ChatGPT requires developer mode access. See the [connection guide](https://developers.openai.com/apps-sdk/deploy/connect-chatgpt) for setup instructions.
-
-
-## Project Structure
-
-```
-app/
-├── mcp/
-│   └── route.ts          # MCP server with tool/resource registration
-├── layout.tsx            # Root layout with SDK bootstrap
-├── page.tsx              # Homepage content
-└── globals.css           # Global styles
-middleware.ts             # CORS handling for RSC
-next.config.ts            # Asset prefix configuration
+```bash
+pnpm build
+pnpm start
 ```
 
-## How It Works
+## Using the app in ChatGPT
 
-1. **Tool Invocation**: ChatGPT calls a tool registered in `app/mcp/route.ts`
-2. **Resource Reference**: Tool response includes `templateUri` pointing to a registered resource
-3. **Widget Rendering**: ChatGPT fetches the resource HTML and renders it in an iframe
-4. **Client Hydration**: Next.js hydrates the app inside the iframe with patched APIs
-5. **Navigation**: Client-side navigation uses patched `fetch` to load RSC payloads
+1. Deploy the app (typically on Vercel).
+2. In ChatGPT, create a connector and point it to `https://<your-domain>/mcp`.
+3. Invoke the registered MCP tool from ChatGPT to render the widget.
 
-## Learn More
+When running outside ChatGPT, `app/page.tsx` intentionally shows a banner if `window.openai` is unavailable.
 
-- [OpenAI Apps SDK Documentation](https://developers.openai.com/apps-sdk)
-- [OpenAI Apps SDK - MCP Server Guide](https://developers.openai.com/apps-sdk/build/mcp-server)
-- [Model Context Protocol](https://modelcontextprotocol.io)
-- [Next.js Documentation](https://nextjs.org/docs)
+## Deployment notes
 
-## Deployment
+- `baseUrl.ts` selects:
+  - `http://localhost:3000` in development
+  - Vercel production URL in production
+  - Vercel preview/branch URL otherwise
+- `middleware.ts` injects CORS headers for all routes and handles `OPTIONS` preflight.
+- `app/layout.tsx` injects `NextChatSDKBootstrap`, which is required for iframe-safe routing/fetch behavior in ChatGPT.
 
-This project is designed to work seamlessly with [Vercel](https://vercel.com) deployment. The `baseUrl.ts` configuration automatically detects Vercel environment variables and sets the correct asset URLs.
+## Extending with a new MCP tool
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/vercel-labs/chatgpt-apps-sdk-nextjs-starter)
+1. Add a new widget config in `app/mcp/route.ts`.
+2. Register a resource for the widget HTML (`registerResource`).
+3. Register a tool with a Zod schema (`registerTool`).
+4. Return `content`, `structuredContent`, and `_meta` in the handler.
+5. If needed, add/update widget UI under `app/` and reference it from the resource.
 
-The configuration automatically handles:
-- Production URLs via `VERCEL_PROJECT_PRODUCTION_URL`
-- Preview/branch URLs via `VERCEL_BRANCH_URL`
-- Asset prefixing for correct resource loading in iframes
+## Useful links
+
+- OpenAI Apps SDK: https://developers.openai.com/apps-sdk
+- MCP spec: https://modelcontextprotocol.io
+- Next.js docs: https://nextjs.org/docs
