@@ -99,3 +99,32 @@ The MCP endpoint is available at `http://localhost:3000/mcp`. Outside of a ChatG
 ## Deployment
 
 Push to a Vercel-connected repo. No `vercel.json` is needed — defaults work. The Vercel-provided environment variables handle base URL resolution automatically.
+
+## Cursor Cloud specific instructions
+
+### Services
+
+| Service | Command | Port | Notes |
+|---------|---------|------|-------|
+| Next.js dev server | `pnpm dev` | 3000 | Serves widget UI + MCP endpoint |
+
+No external services (databases, caches, Docker) are required.
+
+### Running
+
+- `pnpm dev` starts the dev server with Turbopack on `http://localhost:3000`.
+- The MCP endpoint at `/mcp` accepts POST requests only (GET returns 405). Test initialization with: `curl -X POST http://localhost:3000/mcp -H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" -d '{"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}},"id":1}'`
+- The MCP handler uses in-memory session state; only the first initialize request per server instance succeeds via curl. Subsequent requests require proper session management (handled by ChatGPT in production).
+- Outside of ChatGPT, the homepage shows a "no `window.openai` detected" banner — this is expected behavior, not a bug.
+
+### Linting & Type Checking
+
+- No ESLint config exists. Use `npx tsc --noEmit` for TypeScript type checking.
+- Build check: `pnpm build`
+
+### Gotchas
+
+- The `@modelcontextprotocol/sdk` peer dependency requires `zod@^3.25`. If the lockfile resolves an incompatible zod version (e.g. 3.24.x), both build and dev server will fail with `Module not found: Can't resolve 'zod/v3'`. Fix by running `pnpm add zod@3` to get the latest compatible 3.x release.
+- Native build scripts for `@tailwindcss/oxide` and `sharp` must be allowed. The `pnpm.onlyBuiltDependencies` field in `package.json` handles this non-interactively. Do NOT run `pnpm approve-builds` (interactive).
+- Next.js 16 emits a deprecation warning about the "middleware" file convention recommending "proxy" instead — this is cosmetic and does not affect functionality.
+- If a stale dev server holds port 3000, delete `/workspace/.next/dev/lock` and kill the old process before restarting.
