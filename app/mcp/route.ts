@@ -66,15 +66,14 @@ const handler = createMcpHandler(async (server) => {
           },
         },
       ],
-    })
+    }),
   );
 
   server.registerTool(
     contentWidget.id,
     {
       title: contentWidget.title,
-      description:
-        "Fetch and display the homepage content with the name of the user",
+      description: "Fetch and display the homepage content with the name of the user",
       inputSchema: {
         name: z.string().describe("The name of the user to display on the homepage"),
       },
@@ -94,7 +93,7 @@ const handler = createMcpHandler(async (server) => {
         },
         _meta: widgetMeta(contentWidget),
       };
-    }
+    },
   );
 });
 

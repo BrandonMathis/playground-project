@@ -100,9 +100,7 @@ export default function Home() {
           <li className="mb-2 tracking-[-.01em]">
             Welcome to the ChatGPT Apps SDK Next.js Starter
           </li>
-          <li className="mb-2 tracking-[-.01em]">
-            Name returned from tool call: {name ?? "..."}
-          </li>
+          <li className="mb-2 tracking-[-.01em]">Name returned from tool call: {name ?? "..."}</li>
           <li className="mb-2 tracking-[-.01em]">MCP server path: /mcp</li>
         </ol>
 

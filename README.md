@@ -13,11 +13,13 @@ This project shows how to integrate a Next.js application with the ChatGPT Apps 
 The core MCP server implementation that exposes tools and resources to ChatGPT.
 
 **Key features:**
+
 - **Tool registration** with OpenAI-specific metadata
 - **Resource registration** that serves HTML content for iframe rendering
 - **Cross-linking** between tools and resources via `templateUri`
 
 **OpenAI-specific metadata:**
+
 ```typescript
 {
   "openai/outputTemplate": widget.templateUri,      // Links to resource
@@ -36,7 +38,7 @@ Full configuration options: [OpenAI Apps SDK MCP Documentation](https://develope
 
 ```typescript
 const nextConfig: NextConfig = {
-  assetPrefix: baseURL,  // Prevents 404s on /_next/ files in iframe
+  assetPrefix: baseURL, // Prevents 404s on /_next/ files in iframe
 };
 ```
 
@@ -60,11 +62,13 @@ export function middleware(request: NextRequest) {
 The `<NextChatSDKBootstrap>` component patches browser APIs to work correctly within the ChatGPT iframe:
 
 **What it patches:**
+
 - `history.pushState` / `history.replaceState` - Prevents full-origin URLs in history
 - `window.fetch` - Rewrites same-origin requests to use the correct base URL
 - `<html>` attribute observer - Prevents ChatGPT from modifying the root element
 
 **Required configuration:**
+
 ```tsx
 <html lang="en" suppressHydrationWarning>
   <head>
@@ -96,9 +100,22 @@ pnpm dev
 
 Open [http://localhost:3000](http://localhost:3000) to see the app.
 
+### Formatting
+
+This project uses Prettier for consistent code formatting.
+
+```bash
+# check formatting
+pnpm format:check
+
+# auto-fix formatting
+pnpm format
+```
+
 ### Testing the MCP Server
 
 The MCP server is available at:
+
 ```
 http://localhost:3000/mcp
 ```
@@ -106,10 +123,9 @@ http://localhost:3000/mcp
 ### Connecting from ChatGPT
 
 1. [Deploy your app to Vercel](https://vercel.com/new/clone?demo-description=Ship%20an%20ChatGPT%20app%20on%20Vercel%20with%20Next.js%20and%20Model%20Context%20Protocol%20%28MCP%29.%0A&demo-image=%2F%2Fimages.ctfassets.net%2Fe5382hct74si%2F5TdbPy0tev8hh3rTOsdfMm%2F155b970ca5e75adb74206db26493efc7%2Fimage.png&demo-title=ChatGPT%20app%20with%20Next.js&demo-url=https%3A%2F%2Fchatgpt-apps-sdk-nextjs-starter.labs.vercel.dev%2F&from=templates&project-name=ChatGPT%20app%20with%20Next.js&project-names=Comma%20separated%20list%20of%20project%20names%2Cto%20match%20the%20root-directories&repository-name=chatgpt-app-with-next-js&repository-url=https%3A%2F%2Fgithub.com%2Fvercel-labs%2Fchatgpt-apps-sdk-nextjs-starter&root-directories=List%20of%20directory%20paths%20for%20the%20directories%20to%20clone%20into%20projects&skippable-integrations=1&teamSlug=vercel)
-3. In ChatGPT, navigate to **Settings → [Connectors](https://chatgpt.com/#settings/Connectors) → Create** and add your MCP server URL with the `/mcp` path (e.g., `https://your-app.vercel.app/mcp`)
+2. In ChatGPT, navigate to **Settings → [Connectors](https://chatgpt.com/#settings/Connectors) → Create** and add your MCP server URL with the `/mcp` path (e.g., `https://your-app.vercel.app/mcp`)
 
 **Note:** Connecting MCP servers to ChatGPT requires developer mode access. See the [connection guide](https://developers.openai.com/apps-sdk/deploy/connect-chatgpt) for setup instructions.
-
 
 ## Project Structure
 
@@ -146,6 +162,7 @@ This project is designed to work seamlessly with [Vercel](https://vercel.com) de
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/vercel-labs/chatgpt-apps-sdk-nextjs-starter)
 
 The configuration automatically handles:
+
 - Production URLs via `VERCEL_PROJECT_PRODUCTION_URL`
 - Preview/branch URLs via `VERCEL_BRANCH_URL`
 - Asset prefixing for correct resource loading in iframes
