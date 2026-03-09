@@ -1,7 +1,6 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
+import { MCP_TOOLS } from "@/mcpTools";
 import {
   useWidgetProps,
   useMaxHeight,
@@ -21,13 +20,15 @@ export default function Home() {
   const isChatGptApp = useIsChatGptApp();
 
   const name = toolOutput?.result?.structuredContent?.name || toolOutput?.name;
+  const timestamp = new Date().toISOString();
 
   return (
     <div
-      className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center p-8 pb-20 gap-16 sm:p-20"
+      className="font-sans mx-auto max-w-5xl p-6 pb-10 sm:p-10 space-y-6"
       style={{
         maxHeight,
         height: displayMode === "fullscreen" ? maxHeight : undefined,
+        overflowY: "auto",
       }}
     >
       {displayMode !== "fullscreen" && (
@@ -52,7 +53,7 @@ export default function Home() {
           </svg>
         </button>
       )}
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
+      <main className="flex flex-col gap-6">
         {!isChatGptApp && (
           <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg px-4 py-3 w-full">
             <div className="flex items-center gap-3">
@@ -88,41 +89,109 @@ export default function Home() {
             </div>
           </div>
         )}
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Welcome to the ChatGPT Apps SDK Next.js Starter
-          </li>
-          <li className="mb-2 tracking-[-.01em]">
-            Name returned from tool call: {name ?? "..."}
-          </li>
-          <li className="mb-2 tracking-[-.01em]">MCP server path: /mcp</li>
-        </ol>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <Link
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            prefetch={false}
-            href="/custom-page"
-          >
-            Visit another page
-          </Link>
-          <a
-            href="https://vercel.com/templates/ai/chatgpt-app-with-next-js"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline"
-          >
-            Deploy on Vercel
-          </a>
-        </div>
+        <section className="space-y-3">
+          <h1 className="text-2xl font-semibold tracking-tight">
+            MCP Tool Directory
+          </h1>
+          <p className="text-sm text-slate-700 dark:text-slate-300">
+            This page summarizes the MCP tools available in this app. The list is
+            automatically generated from the shared MCP tool registry used by the
+            server route.
+          </p>
+        </section>
+
+        <section className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+          <div className="rounded-lg border border-slate-200 dark:border-slate-800 p-4">
+            <p className="font-medium">MCP endpoint</p>
+            <p className="font-mono text-slate-700 dark:text-slate-300">/mcp</p>
+          </div>
+          <div className="rounded-lg border border-slate-200 dark:border-slate-800 p-4">
+            <p className="font-medium">Registered tools</p>
+            <p className="font-mono text-slate-700 dark:text-slate-300">
+              {MCP_TOOLS.length}
+            </p>
+          </div>
+          <div className="rounded-lg border border-slate-200 dark:border-slate-800 p-4">
+            <p className="font-medium">Display mode</p>
+            <p className="font-mono text-slate-700 dark:text-slate-300">
+              {displayMode ?? "unknown"}
+            </p>
+          </div>
+          <div className="rounded-lg border border-slate-200 dark:border-slate-800 p-4">
+            <p className="font-medium">Last render (UTC)</p>
+            <p className="font-mono text-slate-700 dark:text-slate-300">
+              {timestamp}
+            </p>
+          </div>
+        </section>
+
+        {name && (
+          <p className="rounded-lg border border-emerald-200 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950 px-4 py-3 text-sm">
+            Name returned from tool call: <span className="font-semibold">{name}</span>
+          </p>
+        )}
+
+        <section className="space-y-4">
+          {MCP_TOOLS.map((tool) => (
+            <article
+              key={tool.id}
+              className="rounded-xl border border-slate-200 dark:border-slate-800 p-5 space-y-3"
+            >
+              <header>
+                <h2 className="text-lg font-semibold">{tool.title}</h2>
+                <p className="text-xs font-mono text-slate-600 dark:text-slate-400">
+                  {tool.id}
+                </p>
+              </header>
+              <p className="text-sm text-slate-700 dark:text-slate-300">
+                {tool.description}
+              </p>
+              <dl className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                <div>
+                  <dt className="font-medium">Template URI</dt>
+                  <dd className="font-mono text-slate-700 dark:text-slate-300">
+                    {tool.templateUri}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="font-medium">Resource path</dt>
+                  <dd className="font-mono text-slate-700 dark:text-slate-300">
+                    {tool.resourcePath}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="font-medium">Invoking text</dt>
+                  <dd className="text-slate-700 dark:text-slate-300">
+                    {tool.invoking}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="font-medium">Invoked text</dt>
+                  <dd className="text-slate-700 dark:text-slate-300">
+                    {tool.invoked}
+                  </dd>
+                </div>
+              </dl>
+              <div>
+                <h3 className="text-sm font-medium mb-2">Input schema</h3>
+                <ul className="space-y-1">
+                  {tool.inputSchemaFields.map((field) => (
+                    <li
+                      key={field.name}
+                      className="text-sm text-slate-700 dark:text-slate-300"
+                    >
+                      <span className="font-mono">{field.name}</span> (
+                      <span className="font-mono">{field.type}</span>
+                      {field.required === false ? ", optional" : ", required"}):{" "}
+                      {field.description}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </article>
+          ))}
+        </section>
       </main>
     </div>
   );
