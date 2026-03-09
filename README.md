@@ -72,6 +72,24 @@ pnpm build
 pnpm start
 ```
 
+## Contributor workflow
+
+Use this flow for day-to-day updates:
+
+1. Create a branch and implement your change.
+2. Run a local build to catch type/runtime issues early:
+   ```bash
+   pnpm build
+   ```
+3. If your change touches MCP behavior, manually verify:
+   - `GET /mcp` responds
+   - Tool metadata and resource metadata are still present
+   - The widget renders in ChatGPT (or locally with expected fallback banner)
+4. Open a PR with:
+   - A summary of behavior changes
+   - Any new MCP tool IDs and input fields
+   - Screenshots or logs when UI behavior changed
+
 ## Using the app in ChatGPT
 
 1. Deploy the app (typically on Vercel).
@@ -96,6 +114,26 @@ When running outside ChatGPT, `app/page.tsx` intentionally shows a banner if `wi
 3. Register a tool with a Zod schema (`registerTool`).
 4. Return `content`, `structuredContent`, and `_meta` in the handler.
 5. If needed, add/update widget UI under `app/` and reference it from the resource.
+
+For this project specifically, prefer adding tool metadata in `mcpTools.ts` first. The MCP route and homepage both use that shared registry, so new tools show up in runtime registration and in the UI documentation automatically.
+
+## Troubleshooting
+
+### Widget shows fallback banner ("No window.openai property detected")
+
+This is expected outside of a ChatGPT-hosted iframe. It confirms the app is running locally but not inside a ChatGPT session.
+
+### Tool/resource updates are not reflected
+
+- Ensure your change is wired through `MCP_TOOLS` in `mcpTools.ts`.
+- Restart `pnpm dev` after changing server route wiring.
+- Confirm `templateUri` and `resourcePath` are still valid and reachable.
+
+### MCP endpoint works locally but fails after deploy
+
+- Verify the deployed URL is reachable and includes `/mcp`.
+- Confirm Vercel environment variables are present (the app uses built-in Vercel URL vars via `baseUrl.ts`).
+- Check that CORS headers are present (middleware applies them globally).
 
 ## Useful links
 
