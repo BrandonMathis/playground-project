@@ -6,7 +6,7 @@ export type OpenAIGlobals<
   ToolInput = UnknownObject,
   ToolOutput = UnknownObject,
   ToolResponseMetadata = UnknownObject,
-  WidgetState = UnknownObject
+  WidgetState = UnknownObject,
 > = {
   // visuals
   theme: Theme;
@@ -38,7 +38,7 @@ type API = {
 
 export type UnknownObject = Record<string, unknown>;
 
-export type Theme = "light" | "dark";
+export type Theme = 'light' | 'dark';
 
 export type SafeAreaInsets = {
   top: number;
@@ -51,7 +51,7 @@ export type SafeArea = {
   insets: SafeAreaInsets;
 };
 
-export type DeviceType = "mobile" | "tablet" | "desktop" | "unknown";
+export type DeviceType = 'mobile' | 'tablet' | 'desktop' | 'unknown';
 
 export type UserAgent = {
   device: { type: DeviceType };
@@ -62,7 +62,7 @@ export type UserAgent = {
 };
 
 /** Display mode */
-export type DisplayMode = "pip" | "inline" | "fullscreen";
+export type DisplayMode = 'pip' | 'inline' | 'fullscreen';
 export type RequestDisplayMode = (args: { mode: DisplayMode }) => Promise<{
   /**
    * The granted display mode. The host may reject the request.
@@ -76,13 +76,10 @@ export type CallToolResponse = {
 };
 
 /** Calling APIs */
-export type CallTool = (
-  name: string,
-  args: Record<string, unknown>
-) => Promise<CallToolResponse>;
+export type CallTool = (name: string, args: Record<string, unknown>) => Promise<CallToolResponse>;
 
 /** Extra events */
-export const SET_GLOBALS_EVENT_TYPE = "openai:set_globals";
+export const SET_GLOBALS_EVENT_TYPE = 'openai:set_globals';
 export class SetGlobalsEvent extends CustomEvent<{
   globals: Partial<OpenAIGlobals>;
 }> {
