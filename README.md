@@ -65,6 +65,15 @@ pnpm dev
 App URL: `http://localhost:3000`  
 MCP URL: `http://localhost:3000/mcp`
 
+### Format and style checks
+
+```bash
+pnpm format
+pnpm format:check
+```
+
+Prettier configuration lives in `.prettierrc.json`, and ignored paths are defined in `.prettierignore`.
+
 ### Production build
 
 ```bash
