@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { MCP_TOOLS } from "@/mcpTools";
+import { MCP_TOOLS } from '@/mcpTools';
 import {
   useWidgetProps,
   useMaxHeight,
   useDisplayMode,
   useRequestDisplayMode,
   useIsChatGptApp,
-} from "./hooks";
+} from './hooks';
 
 export default function Home() {
   const toolOutput = useWidgetProps<{
@@ -27,15 +27,15 @@ export default function Home() {
       className="font-sans mx-auto max-w-5xl p-6 pb-10 sm:p-10 space-y-6"
       style={{
         maxHeight,
-        height: displayMode === "fullscreen" ? maxHeight : undefined,
-        overflowY: "auto",
+        height: displayMode === 'fullscreen' ? maxHeight : undefined,
+        overflowY: 'auto',
       }}
     >
-      {displayMode !== "fullscreen" && (
+      {displayMode !== 'fullscreen' && (
         <button
           aria-label="Enter fullscreen"
           className="fixed top-4 right-4 z-50 rounded-full bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 shadow-lg ring-1 ring-slate-900/10 dark:ring-white/10 p-2.5 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer"
-          onClick={() => requestDisplayMode("fullscreen")}
+          onClick={() => requestDisplayMode('fullscreen')}
         >
           <svg
             className="w-5 h-5"
@@ -74,7 +74,7 @@ export default function Home() {
                   This app relies on data from a ChatGPT session.
                 </p>
                 <p className="text-sm text-blue-900 dark:text-blue-100 font-medium">
-                  No{" "}
+                  No{' '}
                   <a
                     href="https://developers.openai.com/apps-sdk/reference"
                     target="_blank"
@@ -82,7 +82,7 @@ export default function Home() {
                     className="underline hover:no-underline font-mono bg-blue-100 dark:bg-blue-900 px-1 py-0.5 rounded"
                   >
                     window.openai
-                  </a>{" "}
+                  </a>{' '}
                   property detected
                 </p>
               </div>
@@ -95,9 +95,9 @@ export default function Home() {
             MCP Tool Directory
           </h1>
           <p className="text-sm text-slate-700 dark:text-slate-300">
-            This page summarizes the MCP tools available in this app. The list is
-            automatically generated from the shared MCP tool registry used by the
-            server route.
+            This page summarizes the MCP tools available in this app. The list
+            is automatically generated from the shared MCP tool registry used by
+            the server route.
           </p>
         </section>
 
@@ -115,7 +115,7 @@ export default function Home() {
           <div className="rounded-lg border border-slate-200 dark:border-slate-800 p-4">
             <p className="font-medium">Display mode</p>
             <p className="font-mono text-slate-700 dark:text-slate-300">
-              {displayMode ?? "unknown"}
+              {displayMode ?? 'unknown'}
             </p>
           </div>
           <div className="rounded-lg border border-slate-200 dark:border-slate-800 p-4">
@@ -128,7 +128,8 @@ export default function Home() {
 
         {name && (
           <p className="rounded-lg border border-emerald-200 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950 px-4 py-3 text-sm">
-            Name returned from tool call: <span className="font-semibold">{name}</span>
+            Name returned from tool call:{' '}
+            <span className="font-semibold">{name}</span>
           </p>
         )}
 
@@ -183,8 +184,9 @@ export default function Home() {
                     >
                       <span className="font-mono">{field.name}</span> (
                       <span className="font-mono">{field.type}</span>
-                      {field.required === false ? ", optional" : ", required"}):{" "}
-                      {field.description}
+                      {field.required === false
+                        ? ', optional'
+                        : ', required'}): {field.description}
                     </li>
                   ))}
                 </ul>
