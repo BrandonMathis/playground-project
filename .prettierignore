@@ -1,0 +1,7 @@
+.next
+out
+coverage
+node_modules
+package-lock.json
+pnpm-lock.yaml
+AGENTS.md
