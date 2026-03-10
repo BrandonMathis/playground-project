@@ -1,47 +1,49 @@
 # GPT Domain App
 
-Next.js 16 ChatGPT App that exposes an MCP server at `/mcp` and renders a widget UI inside ChatGPT using the OpenAI Apps SDK bridge APIs.
+ChatGPT App built with Next.js App Router that exposes an MCP server at `/mcp` and renders a widget in ChatGPT using OpenAI Apps SDK bridge APIs.
 
-## What this project does
+## Overview
 
-- Hosts an MCP endpoint (`app/mcp/route.ts`) with one example tool: `show_content`
-- Registers a widget resource (`text/html+skybridge`) used by ChatGPT to render app UI
-- Renders a client-side widget (`app/page.tsx`) that reads tool output via Apps SDK hooks
-- Includes iframe-safe bootstrap logic in the root layout so navigation and fetch work in ChatGPT
-- Adds permissive CORS middleware required for MCP communication from ChatGPT
+This repository demonstrates a complete MCP-enabled ChatGPT App:
+
+- MCP endpoint (`app/mcp/route.ts`) that registers resources and tools
+- Shared tool registry (`mcpTools.ts`) used by both server and widget UI
+- Client widget page (`app/page.tsx`) that displays tool definitions and outputs
+- ChatGPT iframe bootstrap (`app/layout.tsx`) for routing/fetch compatibility
+- Global CORS middleware (`middleware.ts`) required for MCP communication
 
 ## Tech stack
 
-- **Framework:** Next.js App Router (TypeScript strict mode)
-- **Runtime/UI:** React 19
-- **MCP:** `@modelcontextprotocol/sdk` + `mcp-handler`
-- **Validation:** Zod
-- **Styling:** Tailwind CSS v4
-- **Package manager:** pnpm (lockfile also includes npm compatibility)
+- Next.js 16 (App Router, Turbopack)
+- React 19
+- TypeScript (strict mode)
+- Tailwind CSS v4
+- `@modelcontextprotocol/sdk` + `mcp-handler`
+- Zod
+- pnpm
 
 ## Project structure
 
 ```text
 app/
-├── mcp/route.ts              # MCP resources + tool registration
-├── hooks/                    # OpenAI Apps SDK helper hooks
-├── custom-page/page.tsx      # Secondary example route
-├── page.tsx                  # Main widget UI rendered in ChatGPT
+├── hooks/                    # OpenAI Apps SDK interaction hooks
+├── mcp/route.ts              # MCP server: resource + tool registration
+├── custom-page/page.tsx      # Secondary example page
+├── page.tsx                  # Main widget page shown in ChatGPT
 ├── layout.tsx                # Root layout + NextChatSDKBootstrap
 └── globals.css               # Global styles
-baseUrl.ts                    # Runtime base URL resolution (local + Vercel)
-middleware.ts                 # Global CORS handling for MCP/browser requests
+baseUrl.ts                    # Environment-aware base URL resolution
+middleware.ts                 # CORS headers + OPTIONS handling
+mcpTools.ts                   # Shared MCP tool definitions
 ```
 
-## How MCP wiring works
+## Available scripts
 
-1. `createMcpHandler` creates `GET` and `POST` handlers for `/mcp`.
-2. A resource is registered with MIME type `text/html+skybridge`.
-3. A tool is registered with a Zod input schema and OpenAI widget metadata.
-4. Tool output returns `content`, `structuredContent`, and `_meta`.
-5. ChatGPT resolves `openai/outputTemplate` to render the widget from the resource.
-
-The helper `widgetMeta()` in `app/mcp/route.ts` centralizes the required OpenAI metadata keys so tool/resource behavior stays consistent.
+| Script | Description |
+| --- | --- |
+| `pnpm dev` | Run local dev server with Turbopack |
+| `pnpm build` | Build production app |
+| `pnpm start` | Run production server |
 
 ## Local development
 
@@ -50,55 +52,72 @@ The helper `widgetMeta()` in `app/mcp/route.ts` centralizes the required OpenAI 
 - Node.js 20+
 - pnpm 10+
 
-### Install
+### Install and run
 
 ```bash
 pnpm install
-```
-
-### Run dev server
-
-```bash
 pnpm dev
 ```
 
-App URL: `http://localhost:3000`  
-MCP URL: `http://localhost:3000/mcp`
+- App URL: `http://localhost:3000`
+- MCP URL: `http://localhost:3000/mcp`
 
-### Production build
+To verify a production build locally:
 
 ```bash
 pnpm build
 pnpm start
 ```
 
-## Using the app in ChatGPT
+## MCP architecture
 
-1. Deploy the app (typically on Vercel).
-2. In ChatGPT, create a connector and point it to `https://<your-domain>/mcp`.
-3. Invoke the registered MCP tool from ChatGPT to render the widget.
+`app/mcp/route.ts` creates a handler with `createMcpHandler` and, for each entry in `MCP_TOOLS`:
 
-When running outside ChatGPT, `app/page.tsx` intentionally shows a banner if `window.openai` is unavailable.
+1. Fetches the widget HTML from `resourcePath`
+2. Registers a resource with `text/html+skybridge`
+3. Registers a tool with a Zod-generated `inputSchema`
+4. Returns `content`, `structuredContent`, and `_meta` on invocation
 
-## Deployment notes
+`widgetMeta()` centralizes required OpenAI metadata keys such as:
 
-- `baseUrl.ts` selects:
-  - `http://localhost:3000` in development
-  - Vercel production URL in production
-  - Vercel preview/branch URL otherwise
-- `middleware.ts` injects CORS headers for all routes and handles `OPTIONS` preflight.
-- `app/layout.tsx` injects `NextChatSDKBootstrap`, which is required for iframe-safe routing/fetch behavior in ChatGPT.
+- `openai/outputTemplate`
+- `openai/toolInvocation/invoking`
+- `openai/toolInvocation/invoked`
+- `openai/resultCanProduceWidget`
 
-## Extending with a new MCP tool
+## ChatGPT embedding behavior
 
-1. Add a new widget config in `app/mcp/route.ts`.
-2. Register a resource for the widget HTML (`registerResource`).
-3. Register a tool with a Zod schema (`registerTool`).
-4. Return `content`, `structuredContent`, and `_meta` in the handler.
-5. If needed, add/update widget UI under `app/` and reference it from the resource.
+`NextChatSDKBootstrap` in `app/layout.tsx` is required for stable rendering inside ChatGPT:
+
+- sets `<base href>` for iframe-safe asset resolution
+- patches `history.pushState` / `replaceState` behavior
+- rewrites fetch requests to the app origin when embedded
+- strips injected `<html>` attributes that can cause hydration mismatches
+
+When running outside ChatGPT, the main page intentionally shows a banner when `window.openai` is not present.
+
+## CORS and deployment
+
+`middleware.ts` applies permissive CORS headers (`*`) to all routes and handles `OPTIONS` preflight requests. This is necessary for ChatGPT to call the MCP endpoint.
+
+`baseUrl.ts` automatically selects:
+
+- `http://localhost:3000` in development
+- `VERCEL_PROJECT_PRODUCTION_URL` in production
+- `VERCEL_BRANCH_URL` or `VERCEL_URL` in preview contexts
+
+No custom environment variables are required for base URL resolution.
+
+## Adding a new MCP tool
+
+1. Add a new entry to `MCP_TOOLS` in `mcpTools.ts`.
+2. Provide tool metadata, template URI, resource path, and input schema fields.
+3. Ensure the widget page/route for that `resourcePath` exists under `app/`.
+4. `app/mcp/route.ts` will auto-register the resource and tool from the shared registry.
+5. Invoke the tool from ChatGPT and validate widget rendering/output.
 
 ## Useful links
 
 - OpenAI Apps SDK: https://developers.openai.com/apps-sdk
-- MCP spec: https://modelcontextprotocol.io
+- Model Context Protocol: https://modelcontextprotocol.io
 - Next.js docs: https://nextjs.org/docs
