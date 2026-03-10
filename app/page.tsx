@@ -95,9 +95,9 @@ export default function Home() {
             MCP Tool Directory
           </h1>
           <p className="text-sm text-slate-700 dark:text-slate-300">
-            This page summarizes the MCP tools available in this app. The list is
-            automatically generated from the shared MCP tool registry used by the
-            server route.
+            This page summarizes the MCP tools available in this app. The list
+            is automatically generated from the shared MCP tool registry used by
+            the server route.
           </p>
         </section>
 
@@ -128,7 +128,8 @@ export default function Home() {
 
         {name && (
           <p className="rounded-lg border border-emerald-200 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950 px-4 py-3 text-sm">
-            Name returned from tool call: <span className="font-semibold">{name}</span>
+            Name returned from tool call:{" "}
+            <span className="font-semibold">{name}</span>
           </p>
         )}
 
@@ -183,8 +184,9 @@ export default function Home() {
                     >
                       <span className="font-mono">{field.name}</span> (
                       <span className="font-mono">{field.type}</span>
-                      {field.required === false ? ", optional" : ", required"}):{" "}
-                      {field.description}
+                      {field.required === false
+                        ? ", optional"
+                        : ", required"}): {field.description}
                     </li>
                   ))}
                 </ul>
