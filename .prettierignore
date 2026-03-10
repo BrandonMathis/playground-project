@@ -1,0 +1,14 @@
+# Dependency directories
+node_modules
+
+# Build artifacts
+.next
+out
+build
+
+# Package manager lockfiles
+pnpm-lock.yaml
+package-lock.json
+
+# Workspace automation docs
+AGENTS.md
