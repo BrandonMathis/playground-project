@@ -1,5 +1,9 @@
 import { baseURL } from "@/baseUrl";
-import { MCP_TOOLS, type McpToolDefinition, type ToolInputField } from "@/mcpTools";
+import {
+  MCP_TOOLS,
+  type McpToolDefinition,
+  type ToolInputField,
+} from "@/mcpTools";
 import { createMcpHandler } from "mcp-handler";
 import { z } from "zod";
 
