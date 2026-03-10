@@ -16,4 +16,3 @@ export { useIsChatGptApp } from "./use-is-chatgpt-app";
 
 // Types
 export type * from "./types";
-
