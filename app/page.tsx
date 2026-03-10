@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { MCP_TOOLS } from "@/mcpTools";
+import { MCP_TOOLS } from '@/mcpTools';
 import {
   useWidgetProps,
   useMaxHeight,
   useDisplayMode,
   useRequestDisplayMode,
   useIsChatGptApp,
-} from "./hooks";
+} from './hooks';
 
 export default function Home() {
   const toolOutput = useWidgetProps<{
@@ -27,15 +27,15 @@ export default function Home() {
       className="font-sans mx-auto max-w-5xl p-6 pb-10 sm:p-10 space-y-6"
       style={{
         maxHeight,
-        height: displayMode === "fullscreen" ? maxHeight : undefined,
-        overflowY: "auto",
+        height: displayMode === 'fullscreen' ? maxHeight : undefined,
+        overflowY: 'auto',
       }}
     >
-      {displayMode !== "fullscreen" && (
+      {displayMode !== 'fullscreen' && (
         <button
           aria-label="Enter fullscreen"
           className="fixed top-4 right-4 z-50 rounded-full bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 shadow-lg ring-1 ring-slate-900/10 dark:ring-white/10 p-2.5 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer"
-          onClick={() => requestDisplayMode("fullscreen")}
+          onClick={() => requestDisplayMode('fullscreen')}
         >
           <svg
             className="w-5 h-5"
@@ -74,7 +74,7 @@ export default function Home() {
                   This app relies on data from a ChatGPT session.
                 </p>
                 <p className="text-sm text-blue-900 dark:text-blue-100 font-medium">
-                  No{" "}
+                  No{' '}
                   <a
                     href="https://developers.openai.com/apps-sdk/reference"
                     target="_blank"
@@ -82,7 +82,7 @@ export default function Home() {
                     className="underline hover:no-underline font-mono bg-blue-100 dark:bg-blue-900 px-1 py-0.5 rounded"
                   >
                     window.openai
-                  </a>{" "}
+                  </a>{' '}
                   property detected
                 </p>
               </div>
@@ -91,13 +91,10 @@ export default function Home() {
         )}
 
         <section className="space-y-3">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            MCP Tool Directory
-          </h1>
+          <h1 className="text-2xl font-semibold tracking-tight">MCP Tool Directory</h1>
           <p className="text-sm text-slate-700 dark:text-slate-300">
-            This page summarizes the MCP tools available in this app. The list is
-            automatically generated from the shared MCP tool registry used by the
-            server route.
+            This page summarizes the MCP tools available in this app. The list is automatically
+            generated from the shared MCP tool registry used by the server route.
           </p>
         </section>
 
@@ -108,21 +105,17 @@ export default function Home() {
           </div>
           <div className="rounded-lg border border-slate-200 dark:border-slate-800 p-4">
             <p className="font-medium">Registered tools</p>
-            <p className="font-mono text-slate-700 dark:text-slate-300">
-              {MCP_TOOLS.length}
-            </p>
+            <p className="font-mono text-slate-700 dark:text-slate-300">{MCP_TOOLS.length}</p>
           </div>
           <div className="rounded-lg border border-slate-200 dark:border-slate-800 p-4">
             <p className="font-medium">Display mode</p>
             <p className="font-mono text-slate-700 dark:text-slate-300">
-              {displayMode ?? "unknown"}
+              {displayMode ?? 'unknown'}
             </p>
           </div>
           <div className="rounded-lg border border-slate-200 dark:border-slate-800 p-4">
             <p className="font-medium">Last render (UTC)</p>
-            <p className="font-mono text-slate-700 dark:text-slate-300">
-              {timestamp}
-            </p>
+            <p className="font-mono text-slate-700 dark:text-slate-300">{timestamp}</p>
           </div>
         </section>
 
@@ -140,13 +133,9 @@ export default function Home() {
             >
               <header>
                 <h2 className="text-lg font-semibold">{tool.title}</h2>
-                <p className="text-xs font-mono text-slate-600 dark:text-slate-400">
-                  {tool.id}
-                </p>
+                <p className="text-xs font-mono text-slate-600 dark:text-slate-400">{tool.id}</p>
               </header>
-              <p className="text-sm text-slate-700 dark:text-slate-300">
-                {tool.description}
-              </p>
+              <p className="text-sm text-slate-700 dark:text-slate-300">{tool.description}</p>
               <dl className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                 <div>
                   <dt className="font-medium">Template URI</dt>
@@ -162,29 +151,21 @@ export default function Home() {
                 </div>
                 <div>
                   <dt className="font-medium">Invoking text</dt>
-                  <dd className="text-slate-700 dark:text-slate-300">
-                    {tool.invoking}
-                  </dd>
+                  <dd className="text-slate-700 dark:text-slate-300">{tool.invoking}</dd>
                 </div>
                 <div>
                   <dt className="font-medium">Invoked text</dt>
-                  <dd className="text-slate-700 dark:text-slate-300">
-                    {tool.invoked}
-                  </dd>
+                  <dd className="text-slate-700 dark:text-slate-300">{tool.invoked}</dd>
                 </div>
               </dl>
               <div>
                 <h3 className="text-sm font-medium mb-2">Input schema</h3>
                 <ul className="space-y-1">
                   {tool.inputSchemaFields.map((field) => (
-                    <li
-                      key={field.name}
-                      className="text-sm text-slate-700 dark:text-slate-300"
-                    >
+                    <li key={field.name} className="text-sm text-slate-700 dark:text-slate-300">
                       <span className="font-mono">{field.name}</span> (
                       <span className="font-mono">{field.type}</span>
-                      {field.required === false ? ", optional" : ", required"}):{" "}
-                      {field.description}
+                      {field.required === false ? ', optional' : ', required'}): {field.description}
                     </li>
                   ))}
                 </ul>
