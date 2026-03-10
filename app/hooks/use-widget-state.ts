@@ -7,36 +7,36 @@ import { useOpenAIGlobal } from "./use-openai-global";
 import type { UnknownObject } from "./types";
 
 export function useWidgetState<T extends UnknownObject>(
-  defaultState: T | (() => T)
+  defaultState: T | (() => T),
 ): readonly [T, (state: SetStateAction<T>) => void];
 
 export function useWidgetState<T extends UnknownObject>(
-  defaultState?: T | (() => T | null) | null
+  defaultState?: T | (() => T | null) | null,
 ): readonly [T | null, (state: SetStateAction<T | null>) => void];
 
 /**
  * Hook to manage widget state that persists across widget lifecycles.
  * State is synchronized with the ChatGPT parent window and survives widget minimize/restore.
- * 
+ *
  * @param defaultState - Initial state value or function to compute it
  * @returns A tuple of [state, setState] similar to useState, with bidirectional sync to ChatGPT
- * 
+ *
  * @example
  * ```tsx
  * interface MyState {
  *   count: number;
  *   user: string;
  * }
- * 
+ *
  * const [state, setState] = useWidgetState<MyState>({ count: 0, user: "guest" });
- * 
+ *
  * const increment = () => {
  *   setState(prev => ({ ...prev, count: prev.count + 1 }));
  * };
  * ```
  */
 export function useWidgetState<T extends UnknownObject>(
-  defaultState?: T | (() => T | null) | null
+  defaultState?: T | (() => T | null) | null,
 ): readonly [T | null, (state: SetStateAction<T | null>) => void] {
   const widgetStateFromWindow = useOpenAIGlobal("widgetState") as T;
 
@@ -46,7 +46,7 @@ export function useWidgetState<T extends UnknownObject>(
     }
     return typeof defaultState === "function"
       ? defaultState()
-      : defaultState ?? null;
+      : (defaultState ?? null);
   });
 
   useEffect(() => {
@@ -65,7 +65,7 @@ export function useWidgetState<T extends UnknownObject>(
         return newState;
       });
     },
-    [window.openai.setWidgetState]
+    [window.openai.setWidgetState],
   );
 
   return [widgetState, setWidgetState] as const;
