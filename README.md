@@ -56,6 +56,13 @@ The helper `widgetMeta()` in `app/mcp/route.ts` centralizes the required OpenAI 
 pnpm install
 ```
 
+### Format code
+
+```bash
+pnpm format
+pnpm format:check
+```
+
 ### Run dev server
 
 ```bash
