@@ -7,9 +7,9 @@ import type { DisplayMode } from "./types";
 
 /**
  * Hook to get the current display mode of the widget.
- * 
+ *
  * @returns The current display mode ("pip" | "inline" | "fullscreen") or null if not available
- * 
+ *
  * @example
  * ```tsx
  * const displayMode = useDisplayMode();
