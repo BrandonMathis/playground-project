@@ -1,0 +1,9 @@
+.next
+node_modules
+.vercel
+coverage
+dist
+build
+AGENTS.md
+pnpm-lock.yaml
+package-lock.json
