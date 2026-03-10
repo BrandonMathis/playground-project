@@ -1,5 +1,9 @@
 import { baseURL } from "@/baseUrl";
-import { MCP_TOOLS, type McpToolDefinition, type ToolInputField } from "@/mcpTools";
+import {
+  MCP_TOOLS,
+  type McpToolDefinition,
+  type ToolInputField,
+} from "@/mcpTools";
 import { createMcpHandler } from "mcp-handler";
 import { z } from "zod";
 
@@ -34,12 +38,12 @@ const createInputSchema = (tool: McpToolDefinition) =>
         field.name,
         field.required === false ? describedField.optional() : describedField,
       ];
-    })
+    }),
   );
 
 const createContentWidget = (
   tool: McpToolDefinition,
-  html: string
+  html: string,
 ): ContentWidget => ({
   id: tool.id,
   title: tool.title,
@@ -91,7 +95,7 @@ const handler = createMcpHandler(async (server) => {
             },
           },
         ],
-      })
+      }),
     );
 
     server.registerTool(
@@ -104,7 +108,7 @@ const handler = createMcpHandler(async (server) => {
       },
       async (input) => {
         const stringInput = Object.values(input).find(
-          (value): value is string => typeof value === "string"
+          (value): value is string => typeof value === "string",
         );
 
         return {
@@ -120,7 +124,7 @@ const handler = createMcpHandler(async (server) => {
           },
           _meta: widgetMeta(contentWidget),
         };
-      }
+      },
     );
   }
 });
