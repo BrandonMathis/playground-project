@@ -24,7 +24,7 @@ export default function Home() {
 
   return (
     <div
-      className="font-sans mx-auto max-w-5xl p-6 pb-10 sm:p-10 space-y-6"
+      className="mx-auto max-w-5xl space-y-6 p-6 pb-10 font-sans sm:p-10"
       style={{
         maxHeight,
         height: displayMode === "fullscreen" ? maxHeight : undefined,
@@ -34,11 +34,11 @@ export default function Home() {
       {displayMode !== "fullscreen" && (
         <button
           aria-label="Enter fullscreen"
-          className="fixed top-4 right-4 z-50 rounded-full bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 shadow-lg ring-1 ring-slate-900/10 dark:ring-white/10 p-2.5 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+          className="fixed top-4 right-4 z-50 cursor-pointer rounded-full bg-white p-2.5 text-slate-700 shadow-lg ring-1 ring-slate-900/10 transition-colors hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-300 dark:ring-white/10 dark:hover:bg-slate-700"
           onClick={() => requestDisplayMode("fullscreen")}
         >
           <svg
-            className="w-5 h-5"
+            className="h-5 w-5"
             fill="none"
             stroke="currentColor"
             strokeWidth={1.5}
@@ -55,10 +55,10 @@ export default function Home() {
       )}
       <main className="flex flex-col gap-6">
         {!isChatGptApp && (
-          <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg px-4 py-3 w-full">
+          <div className="w-full rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 dark:border-blue-800 dark:bg-blue-950">
             <div className="flex items-center gap-3">
               <svg
-                className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0"
+                className="h-5 w-5 flex-shrink-0 text-blue-600 dark:text-blue-400"
                 fill="currentColor"
                 viewBox="0 0 20 20"
                 aria-hidden="true"
@@ -69,17 +69,17 @@ export default function Home() {
                   clipRule="evenodd"
                 />
               </svg>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm text-blue-900 dark:text-blue-100 font-medium">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
                   This app relies on data from a ChatGPT session.
                 </p>
-                <p className="text-sm text-blue-900 dark:text-blue-100 font-medium">
+                <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
                   No{" "}
                   <a
                     href="https://developers.openai.com/apps-sdk/reference"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="underline hover:no-underline font-mono bg-blue-100 dark:bg-blue-900 px-1 py-0.5 rounded"
+                    className="rounded bg-blue-100 px-1 py-0.5 font-mono underline hover:no-underline dark:bg-blue-900"
                   >
                     window.openai
                   </a>{" "}
@@ -95,30 +95,30 @@ export default function Home() {
             MCP Tool Directory
           </h1>
           <p className="text-sm text-slate-700 dark:text-slate-300">
-            This page summarizes the MCP tools available in this app. The list is
-            automatically generated from the shared MCP tool registry used by the
-            server route.
+            This page summarizes the MCP tools available in this app. The list
+            is automatically generated from the shared MCP tool registry used by
+            the server route.
           </p>
         </section>
 
-        <section className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-          <div className="rounded-lg border border-slate-200 dark:border-slate-800 p-4">
+        <section className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
+          <div className="rounded-lg border border-slate-200 p-4 dark:border-slate-800">
             <p className="font-medium">MCP endpoint</p>
             <p className="font-mono text-slate-700 dark:text-slate-300">/mcp</p>
           </div>
-          <div className="rounded-lg border border-slate-200 dark:border-slate-800 p-4">
+          <div className="rounded-lg border border-slate-200 p-4 dark:border-slate-800">
             <p className="font-medium">Registered tools</p>
             <p className="font-mono text-slate-700 dark:text-slate-300">
               {MCP_TOOLS.length}
             </p>
           </div>
-          <div className="rounded-lg border border-slate-200 dark:border-slate-800 p-4">
+          <div className="rounded-lg border border-slate-200 p-4 dark:border-slate-800">
             <p className="font-medium">Display mode</p>
             <p className="font-mono text-slate-700 dark:text-slate-300">
               {displayMode ?? "unknown"}
             </p>
           </div>
-          <div className="rounded-lg border border-slate-200 dark:border-slate-800 p-4">
+          <div className="rounded-lg border border-slate-200 p-4 dark:border-slate-800">
             <p className="font-medium">Last render (UTC)</p>
             <p className="font-mono text-slate-700 dark:text-slate-300">
               {timestamp}
@@ -127,8 +127,9 @@ export default function Home() {
         </section>
 
         {name && (
-          <p className="rounded-lg border border-emerald-200 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950 px-4 py-3 text-sm">
-            Name returned from tool call: <span className="font-semibold">{name}</span>
+          <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm dark:border-emerald-900 dark:bg-emerald-950">
+            Name returned from tool call:{" "}
+            <span className="font-semibold">{name}</span>
           </p>
         )}
 
@@ -136,18 +137,18 @@ export default function Home() {
           {MCP_TOOLS.map((tool) => (
             <article
               key={tool.id}
-              className="rounded-xl border border-slate-200 dark:border-slate-800 p-5 space-y-3"
+              className="space-y-3 rounded-xl border border-slate-200 p-5 dark:border-slate-800"
             >
               <header>
                 <h2 className="text-lg font-semibold">{tool.title}</h2>
-                <p className="text-xs font-mono text-slate-600 dark:text-slate-400">
+                <p className="font-mono text-xs text-slate-600 dark:text-slate-400">
                   {tool.id}
                 </p>
               </header>
               <p className="text-sm text-slate-700 dark:text-slate-300">
                 {tool.description}
               </p>
-              <dl className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+              <dl className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
                 <div>
                   <dt className="font-medium">Template URI</dt>
                   <dd className="font-mono text-slate-700 dark:text-slate-300">
@@ -174,7 +175,7 @@ export default function Home() {
                 </div>
               </dl>
               <div>
-                <h3 className="text-sm font-medium mb-2">Input schema</h3>
+                <h3 className="mb-2 text-sm font-medium">Input schema</h3>
                 <ul className="space-y-1">
                   {tool.inputSchemaFields.map((field) => (
                     <li
@@ -183,8 +184,9 @@ export default function Home() {
                     >
                       <span className="font-mono">{field.name}</span> (
                       <span className="font-mono">{field.type}</span>
-                      {field.required === false ? ", optional" : ", required"}):{" "}
-                      {field.description}
+                      {field.required === false
+                        ? ", optional"
+                        : ", required"}): {field.description}
                     </li>
                   ))}
                 </ul>
