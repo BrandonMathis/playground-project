@@ -34,6 +34,7 @@ When not inside ChatGPT (`window.openai` is absent), the page shows an informati
 ### ChatGPT SDK Bootstrap (`app/layout.tsx`)
 
 The root layout injects `NextChatSDKBootstrap` in `<head>`, which:
+
 - Sets `<base href>` to the app's origin for correct asset loading in iframes
 - Patches `history.pushState`/`replaceState` for iframe-safe routing
 - Patches `fetch` to rewrite cross-origin requests back to the app origin
