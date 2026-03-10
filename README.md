@@ -72,6 +72,15 @@ pnpm build
 pnpm start
 ```
 
+### Code formatting
+
+Prettier is configured for this repository.
+
+```bash
+pnpm format
+pnpm format:check
+```
+
 ## Using the app in ChatGPT
 
 1. Deploy the app (typically on Vercel).
