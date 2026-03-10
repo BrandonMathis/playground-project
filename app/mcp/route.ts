@@ -30,17 +30,11 @@ const createInputSchema = (tool: McpToolDefinition) =>
     tool.inputSchemaFields.map((field) => {
       const baseSchemaFactory = zodTypeByInputType[field.type];
       const describedField = baseSchemaFactory().describe(field.description);
-      return [
-        field.name,
-        field.required === false ? describedField.optional() : describedField,
-      ];
+      return [field.name, field.required === false ? describedField.optional() : describedField];
     })
   );
 
-const createContentWidget = (
-  tool: McpToolDefinition,
-  html: string
-): ContentWidget => ({
+const createContentWidget = (tool: McpToolDefinition, html: string): ContentWidget => ({
   id: tool.id,
   title: tool.title,
   templateUri: tool.templateUri,
