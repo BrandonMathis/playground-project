@@ -65,6 +65,13 @@ pnpm dev
 App URL: `http://localhost:3000`  
 MCP URL: `http://localhost:3000/mcp`
 
+### Code formatting (Prettier)
+
+```bash
+pnpm format
+pnpm format:check
+```
+
 ### Production build
 
 ```bash
