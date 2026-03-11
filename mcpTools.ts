@@ -24,8 +24,7 @@ export const MCP_TOOLS: McpToolDefinition[] = [
   {
     id: "show_content",
     title: "Show Content",
-    description:
-      "Fetch and display the homepage content with the name of the user.",
+    description: "Fetch and display the homepage content with the name of the user.",
     templateUri: "ui://widget/content-template.html",
     invoking: "Loading content...",
     invoked: "Content loaded",
