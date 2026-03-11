@@ -1,0 +1,5 @@
+.next
+node_modules
+AGENTS.md
+package-lock.json
+pnpm-lock.yaml
