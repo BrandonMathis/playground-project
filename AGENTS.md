@@ -34,6 +34,7 @@ When not inside ChatGPT (`window.openai` is absent), the page shows an informati
 ### ChatGPT SDK Bootstrap (`app/layout.tsx`)
 
 The root layout injects `NextChatSDKBootstrap` in `<head>`, which:
+
 - Sets `<base href>` to the app's origin for correct asset loading in iframes
 - Patches `history.pushState`/`replaceState` for iframe-safe routing
 - Patches `fetch` to rewrite cross-origin requests back to the app origin
@@ -76,7 +77,7 @@ middleware.ts             # CORS middleware (required)
 - **Client components** use `"use client"` directive. The main page and all hooks are client-side.
 - **Server logic** is limited to the MCP route handler and layout (RSC).
 - **Path alias** `@/*` maps to the project root (configured in `tsconfig.json`).
-- **No ESLint/Prettier config** — rely on TypeScript strict mode and editor defaults.
+- **Formatting:** Prettier is configured via `.prettierrc.json` with package scripts (`pnpm format`, `pnpm format:check`).
 - **No test framework** is configured.
 
 ## Adding a New MCP Tool
