@@ -8,9 +8,10 @@ export default function HomePage() {
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
         <h1 className="text-4xl font-black tracking-tight">Welcome</h1>
         <p className="font-mono text-sm/6 text-center sm:text-left tracking-[-.01em] max-w-xl">
-          This is a client-side rendered page demonstrating navigation in your ChatGPT app.
+          This is a client-side rendered page demonstrating navigation in your
+          ChatGPT app.
         </p>
-        <Link 
+        <Link
           href="/"
           className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
         >
