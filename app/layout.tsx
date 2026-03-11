@@ -28,11 +28,7 @@ export default function RootLayout({
       <head>
         <NextChatSDKBootstrap baseUrl={baseURL} />
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
-      </body>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>{children}</body>
     </html>
   );
 }
@@ -50,10 +46,7 @@ function NextChatSDKBootstrap({ baseUrl }: { baseUrl: string }) {
             const htmlElement = document.documentElement;
             const observer = new MutationObserver((mutations) => {
               mutations.forEach((mutation) => {
-                if (
-                  mutation.type === "attributes" &&
-                  mutation.target === htmlElement
-                ) {
+                if (mutation.type === "attributes" && mutation.target === htmlElement) {
                   const attrName = mutation.attributeName;
                   if (attrName && attrName !== "suppresshydrationwarning") {
                     htmlElement.removeAttribute(attrName);
@@ -89,23 +82,18 @@ function NextChatSDKBootstrap({ baseUrl }: { baseUrl: string }) {
                 const a = (e?.target as HTMLElement)?.closest("a");
                 if (!a || !a.href) return;
                 const url = new URL(a.href, window.location.href);
-                if (
-                  url.origin !== window.location.origin &&
-                  url.origin != appOrigin
-                ) {
+                if (url.origin !== window.location.origin && url.origin != appOrigin) {
                   try {
                     if (window.openai) {
                       window.openai?.openExternal({ href: a.href });
                       e.preventDefault();
                     }
                   } catch {
-                    console.warn(
-                      "openExternal failed, likely not in OpenAI client"
-                    );
+                    console.warn("openExternal failed, likely not in OpenAI client");
                   }
                 }
               },
-              true
+              true,
             );
 
             if (isInIframe && window.location.origin !== appOrigin) {
