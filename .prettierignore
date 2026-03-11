@@ -1,0 +1,6 @@
+.next
+node_modules
+.vercel
+package-lock.json
+pnpm-lock.yaml
+app/favicon.ico
