@@ -100,12 +100,12 @@ function NextChatSDKBootstrap({ baseUrl }: { baseUrl: string }) {
                     }
                   } catch {
                     console.warn(
-                      "openExternal failed, likely not in OpenAI client"
+                      "openExternal failed, likely not in OpenAI client",
                     );
                   }
                 }
               },
-              true
+              true,
             );
 
             if (isInIframe && window.location.origin !== appOrigin) {
