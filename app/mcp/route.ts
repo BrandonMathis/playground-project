@@ -1,7 +1,7 @@
-import { baseURL } from "@/baseUrl";
-import { MCP_TOOLS, type McpToolDefinition, type ToolInputField } from "@/mcpTools";
-import { createMcpHandler } from "mcp-handler";
-import { z } from "zod";
+import { baseURL } from '@/baseUrl';
+import { MCP_TOOLS, type McpToolDefinition, type ToolInputField } from '@/mcpTools';
+import { createMcpHandler } from 'mcp-handler';
+import { z } from 'zod';
 
 const getAppsSdkCompatibleHtml = async (baseUrl: string, path: string) => {
   const result = await fetch(`${baseUrl}${path}`);
@@ -19,7 +19,7 @@ type ContentWidget = {
   widgetDomain: string;
 };
 
-const zodTypeByInputType: Record<ToolInputField["type"], () => z.ZodTypeAny> = {
+const zodTypeByInputType: Record<ToolInputField['type'], () => z.ZodTypeAny> = {
   string: () => z.string(),
   number: () => z.number(),
   boolean: () => z.boolean(),
@@ -30,17 +30,11 @@ const createInputSchema = (tool: McpToolDefinition) =>
     tool.inputSchemaFields.map((field) => {
       const baseSchemaFactory = zodTypeByInputType[field.type];
       const describedField = baseSchemaFactory().describe(field.description);
-      return [
-        field.name,
-        field.required === false ? describedField.optional() : describedField,
-      ];
-    })
+      return [field.name, field.required === false ? describedField.optional() : describedField];
+    }),
   );
 
-const createContentWidget = (
-  tool: McpToolDefinition,
-  html: string
-): ContentWidget => ({
+const createContentWidget = (tool: McpToolDefinition, html: string): ContentWidget => ({
   id: tool.id,
   title: tool.title,
   templateUri: tool.templateUri,
@@ -53,11 +47,11 @@ const createContentWidget = (
 
 function widgetMeta(widget: ContentWidget) {
   return {
-    "openai/outputTemplate": widget.templateUri,
-    "openai/toolInvocation/invoking": widget.invoking,
-    "openai/toolInvocation/invoked": widget.invoked,
-    "openai/widgetAccessible": false,
-    "openai/resultCanProduceWidget": true,
+    'openai/outputTemplate': widget.templateUri,
+    'openai/toolInvocation/invoking': widget.invoking,
+    'openai/toolInvocation/invoked': widget.invoked,
+    'openai/widgetAccessible': false,
+    'openai/resultCanProduceWidget': true,
   } as const;
 }
 
@@ -72,26 +66,26 @@ const handler = createMcpHandler(async (server) => {
       {
         title: contentWidget.title,
         description: contentWidget.description,
-        mimeType: "text/html+skybridge",
+        mimeType: 'text/html+skybridge',
         _meta: {
-          "openai/widgetDescription": contentWidget.description,
-          "openai/widgetPrefersBorder": true,
+          'openai/widgetDescription': contentWidget.description,
+          'openai/widgetPrefersBorder': true,
         },
       },
       async (uri) => ({
         contents: [
           {
             uri: uri.href,
-            mimeType: "text/html+skybridge",
+            mimeType: 'text/html+skybridge',
             text: `<html>${contentWidget.html}</html>`,
             _meta: {
-              "openai/widgetDescription": contentWidget.description,
-              "openai/widgetPrefersBorder": true,
-              "openai/widgetDomain": contentWidget.widgetDomain,
+              'openai/widgetDescription': contentWidget.description,
+              'openai/widgetPrefersBorder': true,
+              'openai/widgetDomain': contentWidget.widgetDomain,
             },
           },
         ],
-      })
+      }),
     );
 
     server.registerTool(
@@ -104,13 +98,13 @@ const handler = createMcpHandler(async (server) => {
       },
       async (input) => {
         const stringInput = Object.values(input).find(
-          (value): value is string => typeof value === "string"
+          (value): value is string => typeof value === 'string',
         );
 
         return {
           content: [
             {
-              type: "text",
+              type: 'text',
               text: stringInput ?? `${contentWidget.title} executed`,
             },
           ],
@@ -120,7 +114,7 @@ const handler = createMcpHandler(async (server) => {
           },
           _meta: widgetMeta(contentWidget),
         };
-      }
+      },
     );
   }
 });
