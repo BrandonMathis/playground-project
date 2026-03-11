@@ -17,6 +17,7 @@ Next.js 16 ChatGPT App that exposes an MCP server at `/mcp` and renders a widget
 - **MCP:** `@modelcontextprotocol/sdk` + `mcp-handler`
 - **Validation:** Zod
 - **Styling:** Tailwind CSS v4
+- **Formatting:** Prettier
 - **Package manager:** pnpm (lockfile also includes npm compatibility)
 
 ## Project structure
@@ -70,6 +71,13 @@ MCP URL: `http://localhost:3000/mcp`
 ```bash
 pnpm build
 pnpm start
+```
+
+### Format code
+
+```bash
+pnpm format
+pnpm format:check
 ```
 
 ## Using the app in ChatGPT
