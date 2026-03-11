@@ -91,13 +91,11 @@ export default function Home() {
         )}
 
         <section className="space-y-3">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            MCP Tool Directory
-          </h1>
+          <h1 className="text-2xl font-semibold tracking-tight">MCP Tool Directory</h1>
           <p className="text-sm text-slate-700 dark:text-slate-300">
             This page summarizes the MCP tools available in this app. The list is
-            automatically generated from the shared MCP tool registry used by the
-            server route.
+            automatically generated from the shared MCP tool registry used by the server
+            route.
           </p>
         </section>
 
@@ -120,9 +118,7 @@ export default function Home() {
           </div>
           <div className="rounded-lg border border-slate-200 dark:border-slate-800 p-4">
             <p className="font-medium">Last render (UTC)</p>
-            <p className="font-mono text-slate-700 dark:text-slate-300">
-              {timestamp}
-            </p>
+            <p className="font-mono text-slate-700 dark:text-slate-300">{timestamp}</p>
           </div>
         </section>
 
@@ -162,15 +158,11 @@ export default function Home() {
                 </div>
                 <div>
                   <dt className="font-medium">Invoking text</dt>
-                  <dd className="text-slate-700 dark:text-slate-300">
-                    {tool.invoking}
-                  </dd>
+                  <dd className="text-slate-700 dark:text-slate-300">{tool.invoking}</dd>
                 </div>
                 <div>
                   <dt className="font-medium">Invoked text</dt>
-                  <dd className="text-slate-700 dark:text-slate-300">
-                    {tool.invoked}
-                  </dd>
+                  <dd className="text-slate-700 dark:text-slate-300">{tool.invoked}</dd>
                 </div>
               </dl>
               <div>
